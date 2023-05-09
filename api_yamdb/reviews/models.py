@@ -1,3 +1,4 @@
+from reviews.validators import year_validator
 from django.db import models
 
 
@@ -18,6 +19,7 @@ class Genre(models.Model):
     
     class Meta:
         ordering = ("name",)
+
     
     def __str__(self):
         return self.name[:30]
@@ -27,6 +29,8 @@ class Title(models.Model):
     genre = models.ManyToManyField(Genre, related_name="titles")
     category = models.ForeignKey(Category, related_name="titles", on_delete=models.SET_NULL, null=True)
     rating = models.PositiveSmallIntegerField(default=None, blank=True, null=True)
+    year = models.PositiveSmallIntegerField(default=None, validators=[year_validator])
+    description = models.TextField(blank=True, null=True)
     
     class Meta:
         ordering = ("id",)
