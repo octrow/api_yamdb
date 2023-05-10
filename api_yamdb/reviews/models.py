@@ -77,9 +77,8 @@ class Review(models.Model):
         Title, on_delete=models.CASCADE, related_name="titles"
     )
     score = models.PositiveIntegerField(
-        default=5, validators=[MinValueValidator(1), MaxValueValidator(10)]
+        default=None, validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
-
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     def __str__(self):
