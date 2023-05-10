@@ -22,10 +22,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "drf_yasg",
     "rest_framework",
     "rest_framework_simplejwt",
-    # "rest_framework_swagger",
-    "drf_yasg",
+    "rest_framework_swagger",
     "users.apps.UsersConfig",
     "reviews.apps.ReviewsConfig",
     "api.apps.ApiConfig",
@@ -123,4 +123,10 @@ REST_FRAMEWORK = {
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
+}
+
+SWAGGER_SETTINGS = {
+    "SECURITY_DEFINITIONS": {
+        "Bearer": {"type": "apiKey", "name": "Authorization", "in": "header"}
+    }
 }

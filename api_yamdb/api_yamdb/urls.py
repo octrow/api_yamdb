@@ -37,29 +37,16 @@ schema_view = get_schema_view(
 # ends here
 
 urlpatterns = [
-    re_path(
-        r"^doc(?P<format>\.json|\.yaml)$",
-        schema_view.without_ui(cache_timeout=0),
-        name="schema-json",
-    ),  # <-- Here
-    # path(
-    #     "swagger-ui/",
-    #     TemplateView.as_view(
-    #         template_name="redoc.html",
-    #         extra_context={"schema_url": "openapi-schema"},
-    #     ),
-    #     name="swagger-ui",
-    # ),
+    # re_path(
+    #     r"^doc(?P<format>\.json|\.yaml)$",
+    #     schema_view.without_ui(cache_timeout=0),
+    #     name="schema-json",
+    # ),  # <-- Here
     path(
         "doc/",
         schema_view.with_ui("swagger", cache_timeout=0),
         name="schema-swagger-ui",
     ),  # <-- Here
-    # path(
-    #     "redoc/",
-    #     schema_view.with_ui("redoc", cache_timeout=0),
-    #     name="schema-redoc",
-    # ),  # <-- Here
     path("admin/", admin.site.urls),
     path("api/", include("api.urls")),
     path(
