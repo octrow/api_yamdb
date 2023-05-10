@@ -55,6 +55,10 @@ class Title(models.Model):
     def __str__(self):
         return self.name[:30]
 
+    def delete(self, *args, **kwargs):
+        self.reviews.all().delete()
+        super().delete(*args, **kwargs)
+
 
 class GenreTitle(models.Model):
     genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
