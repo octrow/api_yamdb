@@ -1,6 +1,7 @@
 from rest_framework import viewsets
-from reviews.models import Genre, Title, Category
-from api.serializer import GenreSerializer, TitleSerializer, CategorySerializer
+from reviews.models import Genre, Title, Category, Review
+from api.serializer import GenreSerializer, TitleSerializer, CategorySerializer, ReviewSerializer, CommentSerializer
+from django.shortcuts import get_object_or_404
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -17,6 +18,21 @@ class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
 
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs.get('post_id'))
+
+    def get_queryset(self):
+        review = self.get_review()
+        return review.comments.all()
 
 # from django.shortcuts import get_object_or_404
 # from rest_framework import filters, viewsets, mixins
