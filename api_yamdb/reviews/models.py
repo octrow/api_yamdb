@@ -60,12 +60,20 @@ class Title(models.Model):
         super().delete(*args, **kwargs)
 
 
+class GenreTitle(models.Model):
+    genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
+    title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.genre_id.name} - {self.title_id.name}"
+
+
 class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="rewiews"
     )
-    title = models.ForeignKey(
+    title_id = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name="titles"
     )
     score = models.PositiveIntegerField(
@@ -83,7 +91,7 @@ class Comment(models.Model):
     author = models.ForeignKey(
         User, on_delete=models.CASCADE, related_name="comments"
     )
-    review = models.ForeignKey(
+    review_id = models.ForeignKey(
         Review, on_delete=models.CASCADE, related_name="comments"
     )
     pub_date = models.DateTimeField(
