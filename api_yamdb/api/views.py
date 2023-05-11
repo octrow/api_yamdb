@@ -1,7 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from api.permissions import IsAdminOrReadOnly
+
 from reviews.models import Genre, Title, Category, Review
 from api.serializer import (
     GenreSerializer,
@@ -46,19 +47,35 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get('title_id'))
+
+    def get_queryset(self):
+        title = self.get_title()
+        return title.reviews.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
+
 
 class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 
     def get_review(self):
-        return get_object_or_404(Review, pk=self.kwargs.get("post_id"))
+        return get_object_or_404(Review, pk=self.kwargs.get('review_id'))
+
 
     def get_queryset(self):
         review = self.get_review()
         return review.comments.all()
+    
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())    
 
 
 class UserViewSet(viewsets.ModelViewSet):  # заглушка
