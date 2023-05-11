@@ -28,3 +28,26 @@ class User(AbstractUser):
         choices=ROLE_CHOICES,
         default="user",
     )
+
+    class Meta:
+        ordering = ("username",)
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
+
+    def __str__(self):
+        return self.username[:30]
+
+    def save(self, *args, **kwargs):  # заглушка
+        if self.role == "moderator":
+            self.is_staff = True
+        if self.role == "admin":
+            self.is_superuser = True
+        super().save(*args, **kwargs)
+
+    @property  # заглушка
+    def is_moderator(self):
+        return self.role == "moderator"
+
+    @property  # заглушка
+    def is_admin(self):
+        return self.role == "admin"
