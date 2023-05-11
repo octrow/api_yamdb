@@ -30,3 +30,4 @@ class ReviewAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("text", "review_id", "author", "pub_date")
     search_fields = ["text", "review"]
+
