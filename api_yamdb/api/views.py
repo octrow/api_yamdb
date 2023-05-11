@@ -1,6 +1,13 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status, filters
 from reviews.models import Genre, Title, Category
-from api.serializer import GenreSerializer, TitleSerializer, CategorySerializer
+from users.models import User
+from django.shortcuts import get_object_or_404
+from .permissions import IsAdmin
+from api.serializer import (GenreSerializer, TitleSerializer,
+                            CategorySerializer, UserSerializer)
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
@@ -72,3 +79,34 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 #     def get_queryset(self):
 #         return self.request.user.follower.all()
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+
+    """Получение списка всех пользователей."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = (IsAuthenticated, IsAdmin)
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+
+    @action(methods=['get', 'patch'],
+        detail=False, url_path='me',
+        permission_classes=(IsAuthenticated,),
+    )
+
+    def user_get_profile(self, request):
+        if request.method == "GET":
+            serializer = self.serializer_class(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = self.serializer_class(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
