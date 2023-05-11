@@ -2,10 +2,11 @@ from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-from api.views import TitleViewSet, GenreViewSet, CategoryViewSet
+from api.views import TitleViewSet, GenreViewSet, CategoryViewSet, UsersViewSet
 
 routerv1 = DefaultRouter()
 
+routerv1.register(r"users", UsersViewSet, basename='users')
 routerv1.register(r"titles", TitleViewSet, basename="titles")
 routerv1.register(r"genres", GenreViewSet, basename="genres")
 routerv1.register(r"categorys", CategoryViewSet, basename="categorys")

@@ -2,6 +2,7 @@ from rest_framework import permissions
 
 
 class IsAdmin(permissions.BasePermission):
+    """Проверка на администратора."""
     message = 'Доступ разрешен только администратору или суперпользователю.'
 
     def has_permission(self, request, view):

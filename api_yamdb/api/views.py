@@ -1,7 +1,6 @@
 from rest_framework import viewsets, status, filters
 from reviews.models import Genre, Title, Category
 from users.models import User
-from django.shortcuts import get_object_or_404
 from .permissions import IsAdmin
 from api.serializer import (GenreSerializer, TitleSerializer,
                             CategorySerializer, UserSerializer)
@@ -86,7 +85,7 @@ class UsersViewSet(viewsets.ModelViewSet):
     """Получение списка всех пользователей."""
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticated, IsAdmin)
+    permission_classes = [IsAdmin]
     filter_backends = (filters.SearchFilter,)
     search_fields = ('username',)
     lookup_field = 'username'

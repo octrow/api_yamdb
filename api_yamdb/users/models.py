@@ -20,12 +20,14 @@ class User(AbstractUser):
         max_length=150,
         unique=True,
         validators=(username_valid,),
-        verbose_name='Пользователь',
+        verbose_name='Логин',
+        help_text='Введите логин, не более 150 символов',
     )
     email = models.EmailField(
         unique=True,
         max_length=254,
-        verbose_name='email_адрес'
+        verbose_name='email_адрес',
+        help_text='Введите адрес электронной почты для регистрации.',
     )
     first_name = models.CharField(
         max_length=150,
