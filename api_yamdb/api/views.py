@@ -1,4 +1,7 @@
-from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import viewsets, permissions, status, filters
 from django_filters.rest_framework import DjangoFilterBackend
 from api.permissions import IsAdminOrReadOnly
 
@@ -12,6 +15,7 @@ from api.serializer import (
     CommentSerializer,
     UserSerializer,
 )
+from .permissions import IsAdmin
 from users.models import User
 from rest_framework.pagination import PageNumberPagination
 from django.shortcuts import get_object_or_404
@@ -135,3 +139,34 @@ class UserViewSet(viewsets.ModelViewSet):  # заглушка
 
 #     def get_queryset(self):
 #         return self.request.user.follower.all()
+
+
+class UsersViewSet(viewsets.ModelViewSet):
+
+    """Получение списка всех пользователей."""
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [IsAdmin]
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ('username',)
+    lookup_field = 'username'
+
+    @action(methods=['get', 'patch'],
+        detail=False, url_path='me',
+        permission_classes=(IsAuthenticated,),
+    )
+
+    def user_get_profile(self, request):
+        if request.method == "GET":
+            serializer = self.serializer_class(request.user)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        serializer = self.serializer_class(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
