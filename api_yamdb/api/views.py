@@ -1,5 +1,4 @@
 from rest_framework import viewsets, permissions
-from rest_framework.permissions import IsAuthenticatedOrReadOnly
 from django_filters.rest_framework import DjangoFilterBackend
 from api.permissions import IsAdminOrReadOnly
 
