@@ -22,16 +22,12 @@ class TitleAdmin(admin.ModelAdmin):
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
-    list_display = ("text", "author", "pub_date")
+    list_display = ("text", "title_id", "author", "pub_date")
     search_fields = ["text"]
 
 
 @admin.register(Comment)
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("text", "review_id", "author", "pub_date")
-    search_fields = ["text"]
+    search_fields = ["text", "review"]
 
-
-# @admin.register(GenreTitle)
-# class GenreTitleAdmin(admin.ModelAdmin):
-#     list_display = ("genre_id", "title_id")
