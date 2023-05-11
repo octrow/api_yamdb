@@ -1,27 +1,88 @@
-from rest_framework import viewsets, status, filters
-from reviews.models import Genre, Title, Category
-from users.models import User
-from .permissions import IsAdmin
-from api.serializer import (GenreSerializer, TitleSerializer,
-                            CategorySerializer, UserSerializer)
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import viewsets, permissions, status, filters
+from django_filters.rest_framework import DjangoFilterBackend
+from api.permissions import IsAdminOrReadOnly
+
+from reviews.models import Genre, Title, Category, Review
+from api.serializer import (
+    GenreSerializer,
+    TitleShowSerializer,
+    TitleAddSerializer,
+    CategorySerializer,
+    ReviewSerializer,
+    CommentSerializer,
+    UserSerializer,
+)
+from .permissions import IsAdmin
+from users.models import User
+from rest_framework.pagination import PageNumberPagination
+from django.shortcuts import get_object_or_404
 
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    """Вьюсет для категорий"""
+
     queryset = Category.objects.all()
+    permission_classes = (IsAdminOrReadOnly,)
     serializer_class = CategorySerializer
 
 
 class TitleViewSet(viewsets.ModelViewSet):
+    """Вьюсет для произведений"""
+
     queryset = Title.objects.all()
-    serializer_class = TitleSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+
+    def get_serializer_class(self):
+        if self.action in ("list", "retrieve"):
+            return TitleShowSerializer
+        return TitleAddSerializer
 
 
 class GenreViewSet(viewsets.ModelViewSet):
+    """Вьюсет для жанров"""
+
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
+
+
+class ReviewViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    queryset = Review.objects.all()
+    serializer_class = ReviewSerializer
+
+    def get_title(self):
+        return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
+
+    def get_queryset(self):
+        title = self.get_title()
+        return title.reviews.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, title=self.get_title())
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    serializer_class = CommentSerializer
+
+    def get_review(self):
+        return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
+
+    def get_queryset(self):
+        review = self.get_review()
+        return review.comments.all()
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user, review=self.get_review())
+
+
+class UserViewSet(viewsets.ModelViewSet):  # заглушка
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
 
 
 # from django.shortcuts import get_object_or_404

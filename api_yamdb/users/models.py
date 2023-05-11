@@ -3,19 +3,18 @@ from django.contrib.auth.models import AbstractUser
 from .validator import username_valid
 
 
-class Role(models.TextChoices):
-    """Выбор ролей"""
-    ADMIN = 'admin'
-    MODERATOR = 'moderator'
-    USER = 'user'
-
-
 class User(AbstractUser):
     """Кастомная модель User"""
-    bio = models.TextField(
-        verbose_name='Биография',
-        blank=True
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
+
+    ROLE_CHOICES = (
+        (USER, 'Пользователь'),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
     )
+    bio = models.TextField(verbose_name="Биография", blank=True)
     username = models.CharField(
         max_length=150,
         unique=True,
@@ -30,40 +29,39 @@ class User(AbstractUser):
         help_text='Введите адрес электронной почты для регистрации.',
     )
     first_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name='Имя'
+        max_length=150, blank=True, verbose_name="Имя"
     )
     last_name = models.CharField(
-        max_length=150,
-        blank=True,
-        verbose_name='Фамилия'
+        max_length=150, blank=True, verbose_name='Фамилия'
     )
     role = models.CharField(
         max_length=16,
-        choices=Role.choices,
-        default=Role.USER,
+        choices=ROLE_CHOICES,,
+        default=USER,
         verbose_name='Роль',
     )
 
     class Meta:
+        ordering = ("username",)
         verbose_name = "Пользователь"
-        unique_together = ('username',)
+        verbose_name_plural = "Пользователи"
 
     def __str__(self):
-        return f'{self.first_name} {self.last_name}'
+        return self.username[:30]
 
-    @property
-    def is_user(self):
-        return self.role == Role.USER
+    def save(self, *args, **kwargs):  # заглушка
+        if self.role == "moderator":
+            self.is_staff = True
+        if self.role == "admin":
+            self.is_superuser = True
+        super().save(*args, **kwargs)
 
     @property
     def is_moderator(self):
-        return self.role == Role.MODERATOR
+        return self.role == self.MODERATOR
 
     @property
     def is_admin(self):
-        return (self.role == Role.ADMIN
+        return (self.role == self.ADMIN
                 or self.is_superuser
-                or self.is_staff
                 )
