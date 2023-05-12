@@ -1,6 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
-from .validator import username_valid
+from django.core.validators import RegexValidator
 
 
 class User(AbstractUser):
@@ -18,7 +18,9 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=150,
         unique=True,
-        validators=(username_valid,),
+        validators=[
+            RegexValidator(r'^[\w.@-]+$')
+        ],
         verbose_name='Логин',
         help_text='Введите логин, не более 150 символов',
     )
@@ -36,10 +38,17 @@ class User(AbstractUser):
     )
     role = models.CharField(
         max_length=16,
-        choices=ROLE_CHOICES,,
+        choices=ROLE_CHOICES,
         default=USER,
         verbose_name='Роль',
     )
+    confirmation_code = models.CharField(
+        max_length=150, verbose_name='Код')
+
+    class Meta:
+        ordering = ("username",)
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"
 
     class Meta:
         ordering = ("username",)
@@ -49,12 +58,9 @@ class User(AbstractUser):
     def __str__(self):
         return self.username[:30]
 
-    def save(self, *args, **kwargs):  # заглушка
-        if self.role == "moderator":
-            self.is_staff = True
-        if self.role == "admin":
-            self.is_superuser = True
-        super().save(*args, **kwargs)
+    @property
+    def is_user(self):
+        return self.role == self.USER
 
     @property
     def is_moderator(self):
