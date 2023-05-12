@@ -1,9 +1,15 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, generics, permissions, status, viewsets
+from rest_framework import (
+    filters,
+    generics,
+    mixins,
+    permissions,
+    status,
+    viewsets,
+)
 from rest_framework.decorators import action
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -11,18 +17,39 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.filters import TitleFilter
 from api.permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
-from api.serializer import (CategorySerializer, CommentSerializer,
-                            CustomTokenSerializer, GenreSerializer,
-                            ReviewSerializer, SignUpSerializer,
-                            TitleAddSerializer, TitleShowSerializer,
-                            UserEditSerializer, UserSerializer)
+from api.serializer import (
+    CategorySerializer,
+    CommentSerializer,
+    CustomTokenSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleAddSerializer,
+    TitleShowSerializer,
+    UserEditSerializer,
+    UserSerializer,
+)
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
 from .permissions import IsAdmin
 
 
-class CategoryViewSet(viewsets.ModelViewSet):
+class ListCreateDelMixin(
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    """Миксин для вьюсетов"""
+
+    permission_classes = (IsAdminOrReadOnly,)
+    lookup_field = "slug"
+    filter_backends = (filters.SearchFilter,)
+    search_fields = ("=name",)
+
+
+class CategoryViewSet(ListCreateDelMixin):
     """Вьюсет для категорий"""
 
     queryset = Category.objects.all()
@@ -30,6 +57,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
         IsAdminOrReadOnly,
     )  # поставить как класс по умолчанию в настройках?
     serializer_class = CategorySerializer
+
+
+class GenreViewSet(ListCreateDelMixin):
+    """Вьюсет для жанров"""
+
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
@@ -43,14 +78,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         if self.action in ("list", "retrieve"):
             return TitleShowSerializer
         return TitleAddSerializer
-
-
-class GenreViewSet(viewsets.ModelViewSet):
-    """Вьюсет для жанров"""
-
-    queryset = Genre.objects.all()
-    serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
