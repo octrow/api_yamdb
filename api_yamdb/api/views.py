@@ -50,7 +50,9 @@ class GenreViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    """Вьюсет для отзывов"""
+
+    permission_classes = (IsAdminOrReadOnly,)
     queryset = Review.objects.all()
     serializer_class = ReviewSerializer
 
@@ -66,6 +68,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для комментариев"""
+
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     serializer_class = CommentSerializer
 

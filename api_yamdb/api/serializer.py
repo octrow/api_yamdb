@@ -82,12 +82,20 @@ class UserSerializer(serializers.ModelSerializer):  # заглушка
 
 
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор отзывов к произведениям"""
+
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    
     class Meta:
         model = Review
         fields = ("text", "author", "title", "score", "pub_date")
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор комментариев к отзывам"""
+
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
     class Meta:
         model = Comment
         fields = ("text", "author", "review", "pub_date")
