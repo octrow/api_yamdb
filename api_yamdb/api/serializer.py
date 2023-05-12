@@ -1,6 +1,10 @@
 from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
+from users.validator import username_valid
+
 from reviews.models import Title, Genre, Category, Review, Comment
 from users.models import User  # заглушка
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -55,6 +59,28 @@ class TitleAddSerializer(serializers.ModelSerializer):
         fields = "__all__"
 
 
+class UserSerializer(serializers.ModelSerializer):  # заглушка
+    username = serializers.CharField(
+        required=True,
+        max_length=150,
+        validators=(
+            username_valid,
+            UniqueValidator(queryset=User.objects.all()),
+        )
+    )
+
+    class Meta:
+        model = User
+        fields = ('bio', 'username', 'email', 'first_name',
+                  'last_name', 'role')
+        validators = [
+            UniqueTogetherValidator(
+                queryset=User.objects.all(),
+                fields=('username', 'email')
+            ),
+        ]
+
+
 class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
@@ -65,9 +91,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ("text", "author", "review", "pub_date")
-
-
-class UserSerializer(serializers.ModelSerializer):  # заглушка
-    class Meta:
-        model = User
-        fields = "__all__"

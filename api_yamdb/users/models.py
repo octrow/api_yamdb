@@ -1,32 +1,44 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from .validator import username_valid
 
 
 class User(AbstractUser):
-    ROLE_CHOICES = (
-        ("user", "Пользователь"),
-        ("moderator", "Модератор"),
-        ("admin", "Администратор"),
-    )
+    """Кастомная модель User"""
+    USER = 'user'
+    ADMIN = 'admin'
+    MODERATOR = 'moderator'
 
+    ROLE_CHOICES = (
+        (USER, 'Пользователь'),
+        (ADMIN, 'Администратор'),
+        (MODERATOR, 'Модератор'),
+    )
     bio = models.TextField(verbose_name="Биография", blank=True)
     username = models.CharField(
         max_length=150,
         unique=True,
+        validators=(username_valid,),
+        verbose_name='Логин',
+        help_text='Введите логин, не более 150 символов',
     )
     email = models.EmailField(
-        unique=True, max_length=254, verbose_name="Почта"
+        unique=True,
+        max_length=254,
+        verbose_name='email_адрес',
+        help_text='Введите адрес электронной почты для регистрации.',
     )
     first_name = models.CharField(
         max_length=150, blank=True, verbose_name="Имя"
     )
     last_name = models.CharField(
-        max_length=150, blank=True, verbose_name="Фамилия"
+        max_length=150, blank=True, verbose_name='Фамилия'
     )
     role = models.CharField(
-        max_length=255,
+        max_length=16,
         choices=ROLE_CHOICES,
-        default="user",
+        default=USER,
+        verbose_name='Роль',
     )
 
     class Meta:
@@ -44,10 +56,12 @@ class User(AbstractUser):
             self.is_superuser = True
         super().save(*args, **kwargs)
 
-    @property  # заглушка
+    @property
     def is_moderator(self):
-        return self.role == "moderator"
+        return self.role == self.MODERATOR
 
-    @property  # заглушка
+    @property
     def is_admin(self):
-        return self.role == "admin"
+        return (self.role == self.ADMIN
+                or self.is_superuser
+                )

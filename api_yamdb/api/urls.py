@@ -11,8 +11,9 @@ from api.views import (
     CategoryViewSet,
     ReviewViewSet,
     CommentViewSet,
-    UserViewSet,  # заглушка
+    UsersViewSet,  # заглушка
 )
+
 
 routerv1 = DefaultRouter()
 
@@ -23,7 +24,7 @@ routerv1.register(r"reviews", ReviewViewSet, basename="reviews")
 routerv1.register(
     r"reviews/(?P<review_id>\d+)/comments", CommentViewSet, basename="comments"
 )
-routerv1.register(r"users", UserViewSet, basename="users")  # заглушка
+routerv1.register(r"users", UsersViewSet, basename="users")  # заглушка
 # routerv1.register(
 #     r"posts/(?P<post_id>\d+)/comments", CommentViewSet, basename="comments"
 # )
