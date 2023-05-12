@@ -6,7 +6,6 @@ from reviews.models import Title, Genre, Category, Review, Comment
 from users.models import User  # заглушка
 
 
-
 class CategorySerializer(serializers.ModelSerializer):
     """Сериализатор категорий"""
 
@@ -23,18 +22,17 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ("name", "slug")
 
 
-# class TitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = ("name", "category", "genre", "description", "year", "rating")
-
-
 class TitleShowSerializer(serializers.ModelSerializer):
     """Сериализатор для выдачи произведений"""
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
     rating = serializers.SerializerMethodField(read_only=True)
+
+    def get_rating(self, obj):
+        if obj.rating:
+            return obj.rating
+        return None
 
     class Meta:
         fields = "__all__"
@@ -53,6 +51,11 @@ class TitleAddSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
     )
+    rating = serializers.IntegerField(
+        default=None,
+        blank=True,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+    )
 
     class Meta:
         model = Title
@@ -66,17 +69,22 @@ class UserSerializer(serializers.ModelSerializer):  # заглушка
         validators=(
             username_valid,
             UniqueValidator(queryset=User.objects.all()),
-        )
+        ),
     )
 
     class Meta:
         model = User
-        fields = ('bio', 'username', 'email', 'first_name',
-                  'last_name', 'role')
+        fields = (
+            "bio",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+        )
         validators = [
             UniqueTogetherValidator(
-                queryset=User.objects.all(),
-                fields=('username', 'email')
+                queryset=User.objects.all(), fields=("username", "email")
             ),
         ]
 

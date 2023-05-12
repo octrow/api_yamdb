@@ -28,6 +28,14 @@ class CategoryViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAdminOrReadOnly,)
     serializer_class = CategorySerializer
 
+    def delete(self, request, pk=None):
+        instance = self.get_object(pk)
+        if request.user.is_admin:
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(status=status.HTTP_403_FORBIDDEN)
+
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений"""
@@ -78,11 +86,6 @@ class CommentViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
-
-
-class UserViewSet(viewsets.ModelViewSet):  # заглушка
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
 
 
 # from django.shortcuts import get_object_or_404
@@ -144,29 +147,28 @@ class UserViewSet(viewsets.ModelViewSet):  # заглушка
 class UsersViewSet(viewsets.ModelViewSet):
 
     """Получение списка всех пользователей."""
+
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [IsAdmin]
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('username',)
-    lookup_field = 'username'
+    search_fields = ("username",)
+    lookup_field = "username"
 
-    @action(methods=['get', 'patch'],
-        detail=False, url_path='me',
+    @action(
+        methods=["get", "patch"],
+        detail=False,
+        url_path="me",
         permission_classes=(IsAuthenticated,),
     )
-
     def user_get_profile(self, request):
         if request.method == "GET":
             serializer = self.serializer_class(request.user)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer = self.serializer_class(
-            request.user,
-            data=request.data,
-            partial=True
+            request.user, data=request.data, partial=True
         )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
-

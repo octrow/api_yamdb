@@ -75,18 +75,6 @@ class Title(models.Model):
     def __str__(self):
         return self.name[:30]
 
-    # def delete(self, *args, **kwargs):
-    #     self.reviews.all().delete()
-    #     super().delete(*args, **kwargs)
-
-
-# class GenreTitle(models.Model):
-#     genre_id = models.ForeignKey(Genre, on_delete=models.CASCADE)
-#     title_id = models.ForeignKey(Title, on_delete=models.CASCADE)
-
-#     def __str__(self):
-#         return f"{self.genre_id.name} - {self.title_id.name}"
-
 
 class Review(models.Model):
     text = models.TextField()
