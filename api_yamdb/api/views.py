@@ -211,20 +211,16 @@ class UsersViewSet(viewsets.ModelViewSet):
     filter_backends = (filters.SearchFilter,)
     search_fields = ("username",)
     lookup_field = "username"
-    search_fields = ('username',)
-    lookup_field = 'username'
-    http_method_names = ['get', 'post', 'patch', 'delete']
+    search_fields = ("username",)
+    lookup_field = "username"
+    http_method_names = ["get", "post", "patch", "delete"]
 
     @action(
-        methods=["get", "patch"],
+        methods=["GET", "PATCH"],
         detail=False,
         url_path="me",
-    @action(methods=['GET', 'PATCH'],
-        detail=False, url_path='me',
         permission_classes=(IsAuthenticated,),
     )
-    def user_get_profile(self, request):
-
     def user_me_profile(self, request):
         user = request.user
         if request.method == "GET":
@@ -232,17 +228,9 @@ class UsersViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        serializer = self.serializer_class(
-            request.user, data=request.data, partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
         if request.method == "PATCH":
             serializer = UserEditSerializer(
-                user, data=request.data,
-                partial=True
+                user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
