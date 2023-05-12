@@ -1,10 +1,8 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from users.validator import username_valid
 from rest_framework.serializers import ValidationError
-from reviews.models import Title, Genre, Category, Review, Comment
-from users.models import User
 
+from reviews.models import Category, Comment, Genre, Review, Title
+from users.models import User
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -23,18 +21,14 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ("name", "slug")
 
 
-# class TitleSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = Title
-#         fields = ("name", "category", "genre", "description", "year", "rating")
-
-
 class TitleShowSerializer(serializers.ModelSerializer):
     """Сериализатор для выдачи произведений"""
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.SerializerMethodField(read_only=True)
+    rating = serializers.IntegerField(
+        source="reviews__score__avg", read_only=True
+    )
 
     class Meta:
         fields = "__all__"
@@ -80,25 +74,34 @@ class CustomTokenSerializer(serializers.ModelSerializer):
         model = User
 
     def create(self, data):
-        return User.objects.create_user(data['username'])
+        return User.objects.create_user(data["username"])
 
 
 class UserSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
-        fields = ('bio', 'username', 'email', 'first_name',
-                  'last_name', 'role')
-        
+        fields = (
+            "bio",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+        )
+
 
 class UserEditSerializer(serializers.ModelSerializer):
-
     class Meta:
-        fields = ('bio', 'username', 'email',
-                  'first_name', 'last_name', 'role')
+        fields = (
+            "bio",
+            "username",
+            "email",
+            "first_name",
+            "last_name",
+            "role",
+        )
         model = User
-        read_only_fields = ('role',)
-
+        read_only_fields = ("role",)
 
 
 class ReviewSerializer(serializers.ModelSerializer):
