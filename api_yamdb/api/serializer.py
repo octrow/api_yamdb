@@ -1,9 +1,7 @@
 from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator, UniqueValidator
-from django.core.validators import MaxValueValidator, MinValueValidator
-from users.validator import username_valid
 from rest_framework.serializers import ValidationError
-from reviews.models import Title, Genre, Category, Review, Comment
+
+from reviews.models import Category, Comment, Genre, Review, Title
 from users.models import User
 
 
@@ -28,12 +26,9 @@ class TitleShowSerializer(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.SerializerMethodField(read_only=True)
-
-    def get_rating(self, obj):
-        if obj.rating:
-            return obj.rating
-        return None
+    rating = serializers.IntegerField(
+        source="reviews__score__avg", read_only=True
+    )
 
     class Meta:
         fields = "__all__"
