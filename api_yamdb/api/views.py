@@ -3,7 +3,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, status, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
-from api.permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly
+from api.permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
 
 from reviews.models import Genre, Title, Category, Review
 from api.serializer import (
@@ -58,8 +58,7 @@ class GenreViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     """Вьюсет для отзывов"""
 
-    permission_classes = (IsAdminOrReadOnly,)
-    queryset = Review.objects.all()
+    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = ReviewSerializer
 
     def get_title(self):
@@ -76,7 +75,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     """Вьюсет для комментариев"""
 
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = CommentSerializer
 
     def get_review(self):
