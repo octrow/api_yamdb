@@ -103,14 +103,28 @@ class UserEditSerializer(serializers.ModelSerializer):
         model = User
         read_only_fields = ("role",)
 
-
 class ReviewSerializer(serializers.ModelSerializer):
+    """Сериализатор отзывов к произведениям"""
+
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    
     class Meta:
         model = Review
-        fields = ("text", "author", "title", "score", "pub_date")
+        fields = ("id", "text", "author", "score", "pub_date")
+
+        # validators = [
+        #     UniqueTogetherValidator(
+        #         queryset=Review.objects.all(),
+        #         fields=('author', 'title')
+        #     )
+        # ]
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    """Сериализатор комментариев к отзывам"""
+
+    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+
     class Meta:
         model = Comment
-        fields = ("text", "author", "review", "pub_date")
+        fields = ("id", "text", "author", "pub_date")

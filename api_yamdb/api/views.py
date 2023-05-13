@@ -12,6 +12,9 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework import viewsets, permissions, status, filters, generics
+from django_filters.rest_framework import DjangoFilterBackend
+from api.permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -81,8 +84,9 @@ class TitleViewSet(viewsets.ModelViewSet):
 
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
-    queryset = Review.objects.all()
+    """Вьюсет для отзывов"""
+
+    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = ReviewSerializer
 
     def get_title(self):
@@ -97,7 +101,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    """Вьюсет для комментариев"""
+
+    permission_classes = (IsAuthorOrReadOnly,)
     serializer_class = CommentSerializer
 
     def get_review(self):
