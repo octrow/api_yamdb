@@ -1,5 +1,6 @@
 from django.contrib import admin
-from reviews.models import Category, Genre, Title, Review, Comment
+
+from reviews.models import Category, Comment, Genre, Review, Title
 
 
 @admin.register(Category)
@@ -30,4 +31,3 @@ class ReviewAdmin(admin.ModelAdmin):
 class CommentAdmin(admin.ModelAdmin):
     list_display = ("text", "review_id", "author", "pub_date")
     search_fields = ["text", "review"]
-
