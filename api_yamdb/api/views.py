@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import (
     filters,
@@ -14,7 +15,11 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions, status, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
-from api.permissions import IsAdminOrReadOnly, IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly
+from api.permissions import (
+    IsAdminOrReadOnly,
+    IsAuthenticatedOrReadOnly,
+    IsAuthorOrReadOnly,
+)
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
@@ -56,9 +61,6 @@ class CategoryViewSet(ListCreateDelMixin):
     """Вьюсет для категорий"""
 
     queryset = Category.objects.all()
-    permission_classes = (
-        IsAdminOrReadOnly,
-    )  # поставить как класс по умолчанию в настройках?
     serializer_class = CategorySerializer
 
 
@@ -67,13 +69,16 @@ class GenreViewSet(ListCreateDelMixin):
 
     queryset = Genre.objects.all()
     serializer_class = GenreSerializer
-    permission_classes = (IsAdminOrReadOnly,)
 
 
 class TitleViewSet(viewsets.ModelViewSet):
     """Вьюсет для произведений"""
 
-    queryset = Title.objects.all()
+    queryset = (
+        Title.objects.select_related("category")
+        .prefetch_related("genre")
+        .annotate(rating=Avg("reviews__score"))
+    )
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
 
@@ -93,7 +98,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
 
     def get_queryset(self):
-        title = self.get_title()
+        title = get_object_or_404(Title, pk=self.kwargs.get("title_id"))
         return title.reviews.all()
 
     def perform_create(self, serializer):

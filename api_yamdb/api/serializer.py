@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
@@ -26,9 +27,7 @@ class TitleShowSerializer(serializers.ModelSerializer):
 
     category = CategorySerializer(read_only=True)
     genre = GenreSerializer(read_only=True, many=True)
-    rating = serializers.IntegerField(
-        source="reviews__score__avg", read_only=True
-    )
+    rating = serializers.IntegerField(read_only=True)
 
     class Meta:
         fields = "__all__"
@@ -47,10 +46,14 @@ class TitleAddSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
     )
+    rating = serializers.IntegerField(read_only=True)
+
+    def to_representation(self, instance):
+        return TitleShowSerializer(instance).data
 
     class Meta:
         model = Title
-        fields = "__all__"
+        fields = "__all__"  # прописать поля
 
 
 class SignUpSerializer(serializers.ModelSerializer):
@@ -103,27 +106,57 @@ class UserEditSerializer(serializers.ModelSerializer):
         model = User
         read_only_fields = ("role",)
 
+
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
 
-    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
-    
+    title = serializers.SlugRelatedField(
+        slug_field="name",
+        read_only=True,
+    )
+    author = serializers.SlugRelatedField(
+        # default=serializers.CurrentUserDefault(),
+        slug_field="username",
+        read_only=True,
+    )
+
+    def validate(self, data):
+        request = self.context["request"]
+        if request.method == "POST":
+            title_id = self.context["view"].kwargs["title_id"]
+            author = self.context["request"].user
+            title = get_object_or_404(Title, pk=title_id)
+            if Review.objects.filter(title=title, author=author).exists():
+                raise serializers.ValidationError(
+                    "Запрещено добавлять второй отзыв."
+                )
+        return data
+
     class Meta:
         model = Review
-        fields = ("id", "text", "author", "score", "pub_date")
+        fields = "__all__"
+        # fields = ("id", "text", "author", "score", "pub_date")
 
-        # validators = [
-        #     UniqueTogetherValidator(
-        #         queryset=Review.objects.all(),
-        #         fields=('author', 'title')
-        #     )
-        # ]
+        # def validate(self, data):
+        #     request = self.context.get("request")
+        #     title_id = self.context.get("view").kwargs.get("title_id")
+        #     title = get_object_or_404(Title, pk=title_id)
+        #     if (
+        #         request.method == "POST"
+        #         and Review.objects.filter(
+        #             author=request.user, title=title
+        #         ).exists()
+        #     ):
+        #         raise ValidationError("Запрещено добавлять второй отзыв.")
+        #     return data
 
 
 class CommentSerializer(serializers.ModelSerializer):
     """Сериализатор комментариев к отзывам"""
 
-    author = serializers.SlugRelatedField(slug_field='username', read_only=True)
+    author = serializers.SlugRelatedField(
+        slug_field="username", read_only=True
+    )
 
     class Meta:
         model = Comment
