@@ -60,13 +60,10 @@ class Title(models.Model):
         blank=True,
         verbose_name="Категория произведения",
     )
-    rating = models.PositiveSmallIntegerField(
-        default=None, blank=True, null=True, validators=[rating_validator]
-    )
     year = models.PositiveSmallIntegerField(
         "Год выпуска", blank=True, validators=[year_validator]
     )
-    description = models.TextField("Описание", blank=True)
+    description = models.TextField("Описание произведения", blank=True)
 
     class Meta:
         ordering = ("id",)
@@ -85,17 +82,20 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name="reviews"
     )
-    score = models.PositiveIntegerField(validators=[MinValueValidator(1), MaxValueValidator(10)]
+    score = models.PositiveIntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(10)]
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
     class Meta:
-        ordering = ("pub_date", )
+        ordering = ("pub_date",)
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
-        constraints = (models.UniqueConstraint(
-            fields=("author", "title"),
-            name="unique_title_author"), )
+        constraints = (
+            models.UniqueConstraint(
+                fields=("author", "title"), name="unique_title_author"
+            ),
+        )
 
     def __str__(self):
         return self.text[:30]
@@ -112,9 +112,9 @@ class Comment(models.Model):
     pub_date = models.DateTimeField(
         "Дата добавления", auto_now_add=True, db_index=True
     )
-    
+
     class Meta:
-        ordering = ("pub_date", )
+        ordering = ("pub_date",)
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
 
