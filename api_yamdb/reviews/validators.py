@@ -9,10 +9,3 @@ def year_validator(value):
         raise ValidationError(
             f"{value} не подходит для года, попробуйте еще раз"
         )
-
-
-def rating_validator(value):
-    if value < 0 or value > 10:
-        raise ValidationError(
-            f"{value} не подходит для рейтинга, попробуйте еще раз"
-        )
