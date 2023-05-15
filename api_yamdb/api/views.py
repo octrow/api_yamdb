@@ -13,7 +13,6 @@ from rest_framework import (
 from rest_framework.decorators import action
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework import viewsets, permissions, status, filters, generics
 from django_filters.rest_framework import DjangoFilterBackend
 from api.permissions import (
     IsAdminOrReadOnly,
@@ -180,8 +179,6 @@ class UsersViewSet(viewsets.ModelViewSet):
     serializer_class = UserSerializer
     permission_classes = (IsAdmin, IsAuthenticatedOrReadOnly)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ("username",)
-    lookup_field = "username"
     search_fields = ("username",)
     lookup_field = "username"
     http_method_names = ["get", "post", "patch", "delete"]
