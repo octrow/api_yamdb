@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from reviews.validators import rating_validator, year_validator
+from reviews.validators import year_validator
 from users.models import User
 
 
@@ -63,9 +63,7 @@ class Title(models.Model):
     year = models.PositiveSmallIntegerField(
         "Год выпуска", validators=[year_validator]
     )
-    description = models.TextField(
-        "Описание произведения", null=True, blank=True
-    )
+    description = models.TextField("Описание произведения", blank=True)
 
     class Meta:
         ordering = ("id",)
