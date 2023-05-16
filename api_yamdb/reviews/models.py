@@ -2,7 +2,7 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb.settings import LENGTH_REALNAME
-from reviews.basemodel import BaseModelCategoryGenre
+from reviews.basemodel import BaseModelCategoryGenre, BaseModelReviewComment
 from reviews.validators import year_validator
 from users.models import User
 
@@ -97,14 +97,33 @@ class GenreTitle(models.Model):
     def __str__(self):
         return f"{self.title} {self.genre}"
 
+# +/-ГОТОВО! Оба класса (Ревью и Комменты) имеют одинаковые поля и в мете тоже, значит
+# можно создать базовый абстрактный класс и унаследовать от него обе модели.
+# Но не забудьте что мету тоже нужно наследовать иначе она перезапишет всё,
+# а не только то что 'другое'. Класс наследуется от класса, мета от меты.
 
-class Review(models.Model):
-    text = models.TextField()
+# ? (НЕГОТОВО) Еще в моделях ревью и комментов можно в мете добавить умолчательное значение
+# related_name, чтобы не указывать его для каждого поля.
+
+
+# Общее для всех моделей:
+# +/- КАЖЕТСЯ! Смотрим редок внимательно и видим там правильное ограничение
+# длинны для всех полей.
+# + ГОТОВО! Все настройки длины выносим в файл с константами, для многих полей
+# они будут одинаковыми, не повторяемся.
+# + ГОТОВО! Для всех полей нужны verbose_name.
+# + ГОТОВО! Для всех классов нужны в классах Meta verbose_name.
+# +/- КАЖЕТСЯ! У всех классов где используется пагинация, должна быть
+# умолчательная сортировка.
+# + ГОТОВО! Для всех классов нужны методы __str__.
+
+class Review(BaseModelReviewComment):
+    """Модель отзывов для произведений."""
+
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="reviews",
-        verbose_name="Автор отзыва",
     )
     title = models.ForeignKey(
         Title,
@@ -119,10 +138,8 @@ class Review(models.Model):
             MaxValueValidator(10, message="Диапозон для оценки больше 10"),
         ],  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
     )
-    pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
-
-    class Meta:
-        ordering = ("pub_date",)
+    
+    class Meta(BaseModelReviewComment.Meta):
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         constraints = (
@@ -131,52 +148,22 @@ class Review(models.Model):
             ),
         )
 
-    def __str__(self):
-        return self.text[:30]
 
+class Comment(BaseModelReviewComment):
+    """Модель комментариев для отзывов."""
 
-# Оба класса (Ревью и Комменты) имеют одинаковые поля и в мете тоже, значит
-# можно создать базовый абстрактный класс и унаследовать от него обе модели.
-# Но не забудьте что мету тоже нужно наследовать иначе она перезапишет всё,
-# а не только то что 'другое'. Класс наследуется от класса, мета от меты.
-# Еще в моделях ревью и комментов можно в мете добавить умолчательное значение
-# related_name, чтобы не указывать его для каждого поля.
-
-
-class Comment(models.Model):
-    text = models.TextField()
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name="comments",
-        verbose_name="Автор комментария",
     )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
         related_name="comments",
-        verbose_name="Отзыв",
-    )
-    pub_date = models.DateTimeField(
-        "Дата добавления", auto_now_add=True, db_index=True
-    )
-
-    class Meta:
-        ordering = ("pub_date",)
+        verbose_name="Отзыв",)
+      
+    class Meta(BaseModelReviewComment.Meta):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
 
-    def __str__(self):
-        return self.text[:30]
-
-
-# Общее для всех моделей:
-# +/- КАЖЕТСЯ! Смотрим редок внимательно и видим там правильное ограничение
-# длинны для всех полей.
-# + ГОТОВО! Все настройки длины выносим в файл с константами, для многих полей
-# они будут одинаковыми, не повторяемся.
-# + ГОТОВО! Для всех полей нужны verbose_name.
-# + ГОТОВО! Для всех классов нужны в классах Meta verbose_name.
-# +/- КАЖЕТСЯ! У всех классов где используется пагинация, должна быть
-# умолчательная сортировка.
-# + ГОТОВО! Для всех классов нужны методы __str__.
