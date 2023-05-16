@@ -14,6 +14,7 @@ from api.permissions import (
     IsAdminOrReadOnly,
     IsAuthenticatedOrReadOnly,
     IsAuthorOrReadOnly,
+    IsAdmin,
 )
 from api.serializer import (
     CategorySerializer,
@@ -30,21 +31,7 @@ from api.serializer import (
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
-from .permissions import IsAdmin
-
-
-class ListCreateDelMixin(  # Отлично, но лучше убрать этот mixin в специальный файл.
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.ListModelMixin,
-    viewsets.GenericViewSet,
-):
-    """Миксин для вьюсетов"""
-
-    permission_classes = (IsAdminOrReadOnly,)
-    lookup_field = "slug"
-    filter_backends = (filters.SearchFilter,)
-    search_fields = ("=name",)
+from api.viewset import ListCreateDelMixin
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -67,10 +54,12 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = (
         Title.objects.select_related("category")
         .prefetch_related("genre")
-        .annotate(rating=Avg("reviews__score"))
+        .annotate(rating=Avg("reviews__score"))  # Супер
     )
     permission_classes = (IsAdminOrReadOnly,)
     filterset_class = TitleFilter
+    # Нужно добавить бек сортировки, а так же бек фильтрации
+    # (хотя она есть в settings, но это список, у он переопределяется), и ограничить её в теле Viewset
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -85,10 +74,14 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_title(self):
-        return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
+        return get_object_or_404(
+            Title, pk=self.kwargs.get("title_id")
+        )  # Отлично
 
     def get_queryset(self):
-        title = get_object_or_404(Title, pk=self.kwargs.get("title_id"))
+        title = get_object_or_404(
+            Title, pk=self.kwargs.get("title_id")
+        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
         return title.reviews.all()
 
     def perform_create(self, serializer):
@@ -105,7 +98,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
 
     def get_queryset(self):
-        review = self.get_review()
+        review = (
+            self.get_review()
+        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
         return review.comments.all()
 
     def perform_create(self, serializer):
@@ -120,23 +115,31 @@ class SignUpView(generics.GenericAPIView):
 
     def post(self, request):
         username_exists = User.objects.filter(
+            # Сейчас нет возможности получить новый пин-код, если вдруг потерян первый.
+            # Есть 2 решения:
+            # 1. Создавать пользователя методом get_or_create, нужно в блоке try
+            # с выбросом исключения если будет неверное имя пользователя или емаил (нужно найти верное исключение).
+            # 2. Создаем так же как в строках 118-120, но с валидацией в сериализаторе,
+            # в нём нужно проверить, что емаил или ник не используется, а так же придется написать метод create.
             username=request.data.get("username"),
             email=request.data.get("email"),
         ).exists()
         if username_exists:
             return Response(request.data, status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
+        serializer.is_valid(raise_exception=True)  # Отлично
         serializer.save(is_active=False)
         user = User.objects.get(username=serializer.data["username"])
+        # Используем шоткат get_object_or_404.
+        # Использовать только валидированные данные.
         confirmation_code = default_token_generator.make_token(user)
         user.save()
-        email_subject = "Регистрация на сайте"
+        email_subject = "Регистрация на сайте"  # Литералы в 137-138 убрать в файл с константами.
         email_message = f"Ваш код подтверждения: {confirmation_code}"
         send_mail(
             email_subject,
             email_message,
-            from_email=None,
+            from_email=None,  # А тут должен быть емаил админа и он должен храниться в settings.
             recipient_list=[user.email],
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -151,8 +154,13 @@ class CustomTokenObtainView(TokenObtainPairView):
         confirmation_code = request.data.get("confirmation_code")
         serializer = CustomTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        user = get_object_or_404(User, username=serializer.data["username"])
-        if user.confirmation_code != confirmation_code:
+        user = get_object_or_404(
+            User, username=serializer.data["username"]
+        )  # Использовать только валидированные данные.
+
+        if (
+            user.confirmation_code != confirmation_code
+        ):  # Это не работает, вы не проверяли проект перед отправкой?
             return Response(status=status.HTTP_400_BAD_REQUEST)
         user.is_active = True
         user.save()
@@ -184,8 +192,12 @@ class UsersViewSet(viewsets.ModelViewSet):
         user = request.user
         if request.method == "GET":
             serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(raise_exception=True)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer.is_valid(
+                raise_exception=True
+            )  # Зачем, ничего же не меняем?
+            return Response(
+                serializer.data, status=status.HTTP_200_OK
+            )  # Удалить эту строку и 209, а 208 на 4 влево.
 
         if request.method == "PATCH":
             serializer = UserEditSerializer(
