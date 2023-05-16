@@ -198,16 +198,15 @@ class UsersViewSet(viewsets.ModelViewSet):
         detail=False,
         url_path="me",
         permission_classes=(IsAuthenticated,),
-        serializer_class=UserEditSerializer,
     )
+    
     def user_me_profile(self, request):
         user = request.user
 
         if request.method == "GET":
-            serializer = self.get_serializer(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            serializer = UserSerializer(user)
 
-        serializer = self.get_serializer(
+        serializer = UserEditSerializer(
             user,
             data=request.data,
             partial=True
