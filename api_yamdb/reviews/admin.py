@@ -17,7 +17,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 class GenreTitleTabular(admin.TabularInline):
     model = GenreTitle
-    extra = 1
+    # extra = 1
 
 
 @admin.register(Title)
@@ -25,6 +25,7 @@ class TitleAdmin(admin.ModelAdmin):
     list_display = ("name", "year", "description", "category")
     search_fields = ["name", "year"]
     list_filter = ("category", "genre")
+    list_editable = ("category", "year", "description")
     inlines = [GenreTitleTabular]
     # ГОТОВО! Нужно вывести список жанров в списке Произведения, но и этого мало.
     # Если зайти в само произведение то ничего не будет, а хочется редактировать

@@ -4,6 +4,7 @@ from django.db import models
 from reviews.validators import year_validator
 from users.models import User
 from reviews.basemodel import BaseModelCategoryGenre
+from api_yamdb.settings import LENGTH_REALNAME
 
 
 class Category(BaseModelCategoryGenre):
@@ -31,7 +32,9 @@ class Genre(BaseModelCategoryGenre):
 class Title(models.Model):
     """Модель для произведений"""
 
-    name = models.CharField("Название произведения", max_length=255)
+    name = models.CharField(
+        "Название произведения", max_length=LENGTH_REALNAME
+    )
     genre = models.ManyToManyField(
         Genre,
         through="GenreTitle",
@@ -54,8 +57,9 @@ class Title(models.Model):
 
     class Meta:
         ordering = (
-            "id",
-        )  # Никакого прока от сортировки по техническому полю "ключ" нет.
+            "name",
+            "year",
+        )  # ГОТОВО! Никакого прока от сортировки по техническому полю "ключ" нет.
         # Учти, что значения ключей - это случайные величины (точнее они могут непредсказуемо измениться).
         # Поэтому сортировка по ним - это опять случайная последовательность объектов.
         # Лучше заменить на предметное поле (можно на несколько полей - ведь это перечисление)
@@ -68,33 +72,49 @@ class Title(models.Model):
 
 class GenreTitle(models.Model):
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name="title"
+        Title,
+        on_delete=models.CASCADE,
+        related_name="title",
+        verbose_name="Произведение",
     )
     genre = models.ForeignKey(
-        Genre, on_delete=models.CASCADE, related_name="genre"
+        Genre,
+        on_delete=models.CASCADE,
+        related_name="genre",
+        verbose_name="Жанр",
     )
 
     def __str__(self):
         return f"{self.title} {self.genre}"
 
     class Meta:
-        verbose_name = "жанр"
-        verbose_name_plural = "жанры"
+        verbose_name = "Жанр"
+        verbose_name_plural = "Жанры"
+
+    def __str__(self):
+        return f"{self.title} {self.genre}"
 
 
 class Review(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="reviews"
+        User,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Автор отзыва",
     )
     title = models.ForeignKey(
-        Title, on_delete=models.CASCADE, related_name="reviews"
+        Title,
+        on_delete=models.CASCADE,
+        related_name="reviews",
+        verbose_name="Произведение",
     )
-    score = models.PositiveSmallIntegerField(  # ГОТОВО! Есть тип данных еще меньше.
+    score = models.PositiveSmallIntegerField(
+        "Оценка",  # ГОТОВО! Есть тип данных еще меньше.
         validators=[
             MinValueValidator(1, message="Диапозон для оценки меньше 1"),
             MaxValueValidator(10, message="Диапозон для оценки больше 10"),
-        ]  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
+        ],  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 
@@ -123,10 +143,16 @@ class Review(models.Model):
 class Comment(models.Model):
     text = models.TextField()
     author = models.ForeignKey(
-        User, on_delete=models.CASCADE, related_name="comments"
+        User,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Автор комментария",
     )
     review = models.ForeignKey(
-        Review, on_delete=models.CASCADE, related_name="comments"
+        Review,
+        on_delete=models.CASCADE,
+        related_name="comments",
+        verbose_name="Отзыв",
     )
     pub_date = models.DateTimeField(
         "Дата добавления", auto_now_add=True, db_index=True
@@ -144,7 +170,7 @@ class Comment(models.Model):
 # Общее для всех моделей:
 # Смотрим редок внимательно и видим там правильное ограничение длинны для всех полей.
 # Все настройки длины выносим в файл с константами, для многих полей они будут одинаковыми, не повторяемся.
-# Для всех полей нужны verbose_name.
-# Для всех классов нужны в классах Meta verbose_name.
+# + ГОТОВО! Для всех полей нужны verbose_name.
+# + ГОТОВО! Для всех классов нужны в классах Meta verbose_name.
 # У всех классов где используется пагинация, должна быть умолчательная сортировка.
-# Для всех классов нужны методы __str__.
+# + ГОТОВО! Для всех классов нужны методы __str__.
