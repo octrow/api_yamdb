@@ -6,8 +6,8 @@ from api_yamdb.settings import LENGTH_REALNAME, LENGTH_SLUG
 class BaseModelCategoryGenre(models.Model):
     """Модель для жанров и категорий."""
 
-    name = models.CharField("Имя", max_length=LEN_FOR_NAME)
-    slug = models.SlugField("Slug", max_length=LEN_FOR_SLUG, unique=True)
+    name = models.CharField("Имя", max_length=LENGTH_REALNAME)
+    slug = models.SlugField("Slug", max_length=LENGTH_SLUG, unique=True)
 
     class Meta:
         abstract = True
