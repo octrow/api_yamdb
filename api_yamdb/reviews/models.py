@@ -111,11 +111,11 @@ class Review(models.Model):
     title = models.ForeignKey(
         Title, on_delete=models.CASCADE, related_name="reviews"
     )
-    score = models.PositiveIntegerField(  # Есть тип данных еще меньше.
+    score = models.PositiveSmallIntegerField(  # ГОТОВО! Есть тип данных еще меньше.
         validators=[
-            MinValueValidator(1),
-            MaxValueValidator(10),
-        ]  # Отлично, но лучше добавить еще и сообщения об ошибках.
+            MinValueValidator(1, message="Диапозон для оценки меньше 1"),
+            MaxValueValidator(10, message="Диапозон для оценки больше 10"),
+        ]  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
     )
     pub_date = models.DateTimeField("Дата публикации", auto_now_add=True)
 

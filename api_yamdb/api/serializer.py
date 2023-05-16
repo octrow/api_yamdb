@@ -129,12 +129,7 @@ class UserEditSerializer(
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
-
-    title = serializers.SlugRelatedField(
-        # Лишнее переопределение поля, нужно указать его в мете как только для чтения.
-        slug_field="name",
-        read_only=True,
-    )
+    # ГОТОВО! Лишнее переопределение поля, нужно указать его в мете как только для чтения.
     author = serializers.SlugRelatedField(
         slug_field="username",
         read_only=True,
@@ -145,12 +140,8 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == "POST":
             title_id = self.context["view"].kwargs["title_id"]
             author = self.context["request"].user
-            title = get_object_or_404(
-                Title, pk=title_id
-            )  # Не нужно доставать объект, нужно передавать id в следующей строке.
-            if Review.objects.filter(
-                title=title, author=author
-            ).exists():  # Автор получен, почему бы из него и не доставать используя related_name
+            # ГОТОВО! Не нужно доставать объект, нужно передавать id в следующей строке.
+            if author.reviews.filter(title=title_id).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него и не доставать используя related_name
                 raise serializers.ValidationError(
                     "Запрещено добавлять второй отзыв."
                 )
@@ -159,6 +150,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = Review
         fields = "__all__"
+        read_only_fields = ("title",)
 
 
 class CommentSerializer(serializers.ModelSerializer):

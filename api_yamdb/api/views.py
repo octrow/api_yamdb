@@ -82,10 +82,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )  # Отлично
 
     def get_queryset(self):
-        title = get_object_or_404(
-            Title, pk=self.kwargs.get("title_id")
-        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
-        return title.reviews.all()
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -101,10 +99,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
 
     def get_queryset(self):
-        review = (
-            self.get_review()
-        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
-        return review.comments.all()
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
