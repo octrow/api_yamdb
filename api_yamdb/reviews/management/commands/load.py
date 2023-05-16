@@ -6,6 +6,7 @@ from django.core.management.base import BaseCommand
 
 from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
 from users.models import User
+from loguru import logger
 
 
 class Command(BaseCommand):
@@ -25,22 +26,28 @@ class Command(BaseCommand):
             file_path = os.path.join(
                 settings.BASE_DIR, "static", "data", f"{name}.csv"
             )
-            with open(file_path, encoding="utf-8") as data:
-                objects = []
-                for row in csv.DictReader(data):
-                    fields = {}
-                    for key, value in row.items():
-                        if key == "category":
-                            fields[key], _ = name_models[
-                                key
-                            ].objects.get_or_create(id=value)
-                        elif key == "author":
-                            fields[key] = User.objects.get(id=value)
-                        else:
-                            fields[key] = value
-                    objects.append(model(**fields))
-                model.objects.bulk_create(objects)
+            try:
+                with open(file_path, encoding="utf-8") as data:
+                    logger.info(f"Загрузка файла {name}.csv")
+                    objects = []
+                    for row in csv.DictReader(data):
+                        fields = {}
+                        for key, value in row.items():
+                            if key == "category":
+                                fields[key], _ = name_models[
+                                    key
+                                ].objects.get_or_create(id=value)
+                            elif key == "author":
+                                fields[key] = User.objects.get(id=value)
+                            else:
+                                fields[key] = value
+                        objects.append(model(**fields))
+                    model.objects.bulk_create(objects)
+                    logger.info(f"Успешно загружен файл {name}.csv")
+            except FileNotFoundError:
+                logger.error(f"Файл {name}.csv не найден")
+            except Exception as e:
+                logger.error(f"Ошибка в процессе загрузки {name}.csv: {e}")
 
-
-# Нужны принты о начале и окончании загрузки.
-# Нужна страховка открытия файла.
+    # Нужны принты о начале и окончании загрузки.
+    # Нужна страховка открытия файла.
