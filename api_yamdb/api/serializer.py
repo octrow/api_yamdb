@@ -113,26 +113,6 @@ class SignUpSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def create(self, validated_data):
-        confirmation_code = secrets.token_hex(2)
-        message = f"Ваш код подтверждения: {confirmation_code}"
-        try:
-            send_mail(
-                EMAIL_SUBJECT,
-                message,
-                DEFAULT_FROM_EMAIL,
-                [validated_data.get("email")],
-                fail_silently=False,
-            )
-        except Exception as error:
-            return {"error": f"Ошибка при отправки email: {error}"}
-        validated_data["confirmation_code"] = confirmation_code
-        try:
-            user_profile = User.objects.create_user(**validated_data)
-        except Exception as error:
-            return {"error": f"Ошибка при создание профиля: {error}"}
-        return user_profile
-
 
 class CustomTokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
