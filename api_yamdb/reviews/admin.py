@@ -19,6 +19,9 @@ class GenreAdmin(admin.ModelAdmin):
 class TitleAdmin(admin.ModelAdmin):
     list_display = ("name", "year", "description")
     search_fields = ["name", "year"]
+    # Нужно вывести список жанров в списке Произведения, но и этого мало.
+    # Если зайти в само произведение то ничего не будет, а хочется редактировать
+    # жанры произведения, поможет это https://stackoverflow.com/questions/64325709/using-tabularinline-in-django-admin
 
 
 @admin.register(Review)
@@ -36,3 +39,5 @@ class CommentAdmin(admin.ModelAdmin):
 @admin.register(GenreTitle)
 class GenreTitleAdmin(admin.ModelAdmin):
     list_display = ("title", "genre")
+    # Можно импортировать это - from django.contrib.auth.models import Group и
+    # тут его убрать из регистрации, пропадет не нужное поле группы  в админке.

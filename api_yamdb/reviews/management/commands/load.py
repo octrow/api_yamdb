@@ -40,3 +40,7 @@ class Command(BaseCommand):
                             fields[key] = value
                     objects.append(model(**fields))
                 model.objects.bulk_create(objects)
+
+
+# Нужны принты о начале и окончании загрузки.
+# Нужна страховка открытия файла.
