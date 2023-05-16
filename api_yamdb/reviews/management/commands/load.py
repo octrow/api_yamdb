@@ -49,5 +49,6 @@ class Command(BaseCommand):
             except Exception as e:
                 logger.error(f"Ошибка в процессе загрузки {name}.csv: {e}")
 
+    # ГОТОВО!
     # Нужны принты о начале и окончании загрузки.
     # Нужна страховка открытия файла.

@@ -10,20 +10,6 @@ class IsAdmin(permissions.BasePermission):
         )  # Не надо тут проверять еще и супера, он уже прописать в админе в модели.
 
 
-class IsAuthenticatedOrReadOnly(
-    permissions.BasePermission
-):  # Такой есть у ДРФ
-    """
-    Разрешает доступ аутентифицированным пользователям,
-    остальным только для чтения.
-    """
-
-    def has_permission(self, request, view):
-        if request.method in permissions.SAFE_METHODS:
-            return True
-        return request.user and request.user.is_authenticated
-
-
 class IsAdminOrReadOnly(permissions.BasePermission):
     """
     Права на изменение только для администраторов, для
