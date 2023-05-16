@@ -1,14 +1,20 @@
 # from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-
-from api_yamdb.settings import LENGTH_EMAIL, LENGTH_NAME
+import secrets
+from django.core.mail import send_mail
+from api_yamdb.settings import (
+    LENGTH_EMAIL,
+    LENGTH_NAME,
+    EMAIL_SUBJECT,
+    FORMAT_STRING,
+    DEFAULT_FROM_EMAIL,
+)
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
 from users.models import User
 from users.validator import username_valid
 
 # from rest_framework.serializers import ValidationError
-
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -106,6 +112,26 @@ class SignUpSerializer(serializers.ModelSerializer):
                 "Пользователь с такими данными уже существует!"
             )
         return data
+
+    def create(self, validated_data):
+        confirmation_code = secrets.token_hex(2)
+        message = f"Ваш код подтверждения: {confirmation_code}"
+        try:
+            send_mail(
+                EMAIL_SUBJECT,
+                message,
+                DEFAULT_FROM_EMAIL,
+                [validated_data.get("email")],
+                fail_silently=False,
+            )
+        except Exception as error:
+            return {"error": f"Ошибка при отправки email: {error}"}
+        validated_data["confirmation_code"] = confirmation_code
+        try:
+            user_profile = User.objects.create_user(**validated_data)
+        except Exception as error:
+            return {"error": f"Ошибка при создание профиля: {error}"}
+        return user_profile
 
 
 class CustomTokenSerializer(serializers.ModelSerializer):

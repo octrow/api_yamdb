@@ -134,6 +134,9 @@ EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
 DEFAULT_FROM_EMAIL = "kov.dima.seaman@mail.ru"
+EMAIL_SUBJECT = "Подтверждение регистрации"
+
+FORMAT_STRING = "H"
 
 LENGTH_NAME = 150  # username?
 LENGTH_EMAIL = 254
