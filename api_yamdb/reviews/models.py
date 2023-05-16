@@ -97,12 +97,12 @@ class GenreTitle(models.Model):
     def __str__(self):
         return f"{self.title} {self.genre}"
 
-# +/-ГОТОВО! Оба класса (Ревью и Комменты) имеют одинаковые поля и в мете тоже, значит
+# +/-ГОТОВО! Оба класса (Ревью и Комменты) имеют одинаковые поля и в мете тоже,
+# значит
 # можно создать базовый абстрактный класс и унаследовать от него обе модели.
 # Но не забудьте что мету тоже нужно наследовать иначе она перезапишет всё,
 # а не только то что 'другое'. Класс наследуется от класса, мета от меты.
-
-# ? (НЕГОТОВО) Еще в моделях ревью и комментов можно в мете добавить умолчательное значение
+# Еще в моделях ревью и комментов можно в мете добавить умолчательное значение
 # related_name, чтобы не указывать его для каждого поля.
 
 
@@ -120,15 +120,9 @@ class GenreTitle(models.Model):
 class Review(BaseModelReviewComment):
     """Модель отзывов для произведений."""
 
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="reviews",
-    )
     title = models.ForeignKey(
         Title,
         on_delete=models.CASCADE,
-        related_name="reviews",
         verbose_name="Произведение",
     )
     score = models.PositiveSmallIntegerField(
@@ -138,10 +132,11 @@ class Review(BaseModelReviewComment):
             MaxValueValidator(10, message="Диапозон для оценки больше 10"),
         ],  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
     )
-    
+
     class Meta(BaseModelReviewComment.Meta):
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
+        default_related_name = "reviews"
         constraints = (
             models.UniqueConstraint(
                 fields=("author", "title"), name="unique_title_author"
@@ -152,18 +147,13 @@ class Review(BaseModelReviewComment):
 class Comment(BaseModelReviewComment):
     """Модель комментариев для отзывов."""
 
-    author = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="comments",
-    )
     review = models.ForeignKey(
         Review,
         on_delete=models.CASCADE,
-        related_name="comments",
-        verbose_name="Отзыв",)
-      
+        verbose_name="Отзыв",
+    )
+
     class Meta(BaseModelReviewComment.Meta):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
-
+        default_related_name = "comments"
