@@ -47,21 +47,29 @@ class TitleAddSerializer(serializers.ModelSerializer):
         many=True,
     )
     rating = serializers.IntegerField(read_only=True)
+    # 1.Нужна валидация года.
+    # 2. Нужна валидация поля Жанра, у нас по ТЗ это поля обязательное,
+    # если сейчас передать пустой список через Postman, то Произведение создастся вообще без Жанров.
 
-    def to_representation(self, instance):
-        return TitleShowSerializer(instance).data
-
-    class Meta:
+    class Meta:  # Класс Meta должен быть выше методов, но ниже полей.
         model = Title
         fields = "__all__"
 
+    def to_representation(self, instance):  # Отлично
+        return TitleShowSerializer(instance).data
+
 
 class SignUpSerializer(serializers.ModelSerializer):
+    # Для классов Регистрации и Проверки токена не нужно общение с БД, нужно переопределить родительский класс.
+    # Так же смотри замечание в модели про валидацию и про длину полей,
+    # это касается всех сериалайзеров для Пользователя.
     class Meta:
         model = User
         fields = ("username", "email")
 
-    def validate_username(self, value):
+    def validate_username(
+        self, value
+    ):  # Для всех сериалайзеров user нужны валидации на регулярку и me.
         if value.lower() == "me":
             raise ValidationError(
                 'Нельзя использовать "me" в качестве username!'
@@ -93,7 +101,10 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class UserEditSerializer(serializers.ModelSerializer):
+class UserEditSerializer(
+    serializers.ModelSerializer
+):  # Наследуем этот сериалайзер от UserSerializer и наследуем мету от его меты
+    # пишем в мете роль только для чтения, весь класс из 3 строк.
     class Meta:
         fields = (
             "bio",
@@ -111,6 +122,7 @@ class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
 
     title = serializers.SlugRelatedField(
+        # Лишнее переопределение поля, нужно указать его в мете как только для чтения.
         slug_field="name",
         read_only=True,
     )
@@ -124,8 +136,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == "POST":
             title_id = self.context["view"].kwargs["title_id"]
             author = self.context["request"].user
-            title = get_object_or_404(Title, pk=title_id)
-            if Review.objects.filter(title=title, author=author).exists():
+            title = get_object_or_404(
+                Title, pk=title_id
+            )  # Не нужно доставать объект, нужно передавать id в следующей строке.
+            if Review.objects.filter(
+                title=title, author=author
+            ).exists():  # Автор получен, почему бы из него и не доставать используя related_name
                 raise serializers.ValidationError(
                     "Запрещено добавлять второй отзыв."
                 )

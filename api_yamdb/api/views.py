@@ -10,20 +10,30 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.filters import TitleFilter
-from api.permissions import (IsAdminOrReadOnly, IsAuthenticatedOrReadOnly,
-                             IsAuthorOrReadOnly)
-from api.serializer import (CategorySerializer, CommentSerializer,
-                            CustomTokenSerializer, GenreSerializer,
-                            ReviewSerializer, SignUpSerializer,
-                            TitleAddSerializer, TitleShowSerializer,
-                            UserEditSerializer, UserSerializer)
+from api.permissions import (
+    IsAdminOrReadOnly,
+    IsAuthenticatedOrReadOnly,
+    IsAuthorOrReadOnly,
+)
+from api.serializer import (
+    CategorySerializer,
+    CommentSerializer,
+    CustomTokenSerializer,
+    GenreSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleAddSerializer,
+    TitleShowSerializer,
+    UserEditSerializer,
+    UserSerializer,
+)
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
 from .permissions import IsAdmin
 
 
-class ListCreateDelMixin(
+class ListCreateDelMixin(  # Отлично, но лучше убрать этот mixin в специальный файл.
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,

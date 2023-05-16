@@ -1,9 +1,16 @@
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
-from api.views import (CategoryViewSet, CommentViewSet, CustomTokenObtainView,
-                       GenreViewSet, ReviewViewSet, SignUpView, TitleViewSet,
-                       UsersViewSet)
+from api.views import (
+    CategoryViewSet,
+    CommentViewSet,
+    CustomTokenObtainView,
+    GenreViewSet,
+    ReviewViewSet,
+    SignUpView,
+    TitleViewSet,
+    UsersViewSet,
+)
 
 routerv1 = DefaultRouter()
 
@@ -24,7 +31,7 @@ urlpatterns = [
     path("v1/", include(routerv1.urls)),
     path("v1/auth/signup/", SignUpView.as_view(), name="signup"),
     path(
-        "v1/auth/token/",
+        "v1/auth/token/",  # Выносим одинаковые префиксы в отдельный список.
         CustomTokenObtainView.as_view(),
         name="token_obtain_pair",
     ),
