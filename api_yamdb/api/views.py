@@ -193,28 +193,25 @@ class UsersViewSet(viewsets.ModelViewSet):
     lookup_field = "username"
     http_method_names = ["get", "post", "patch", "delete"]
 
-    @action(
+     @action(
         methods=["GET", "PATCH"],
         detail=False,
         url_path="me",
         permission_classes=(IsAuthenticated,),
+        serializer_class=UserEditSerializer,
     )
     def user_me_profile(self, request):
         user = request.user
-        if request.method == "GET":
-            serializer = UserSerializer(user, data=request.data, partial=True)
-            serializer.is_valid(
-                raise_exception=True
-            )  # Зачем, ничего же не меняем?
-            return Response(
-                serializer.data, status=status.HTTP_200_OK
-            )  # Удалить эту строку и 209, а 208 на 4 влево.
 
-        if request.method == "PATCH":
-            serializer = UserEditSerializer(
-                user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
+        if request.method == "GET":
+            serializer = self.get_serializer(user)
             return Response(serializer.data, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+        serializer = self.get_serializer(
+            user,
+            data=request.data,
+            partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_200_OK)
