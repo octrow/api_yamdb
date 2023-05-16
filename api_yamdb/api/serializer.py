@@ -4,7 +4,9 @@ from rest_framework.serializers import ValidationError
 
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
+from users.validator import username_valid
 from users.models import User
+from api_yamdb.settings import LENGTH_NAME, LENGTH_EMAIL
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -73,25 +75,31 @@ class SignUpSerializer(serializers.ModelSerializer):
 
     username = serializers.CharField(
         required=True,
-        max_length=settings.LENGTH_NAME,
-        validators=[username_valid,]
+        max_length=LENGTH_NAME,
+        validators=[
+            username_valid,
+        ],
     )
     email = serializers.EmailField(
         required=True,
-        max_length=settings.LENGTH_EMAIL,)
-    
+        max_length=LENGTH_EMAIL,
+    )
+
     class Meta:
         model = User
         fields = ("username", "email")
-    
+
     def validate(self, data):
-        if User.objects.filter(username=data['username'],
-                               email=data['email']).exists():
+        if User.objects.filter(
+            username=data["username"], email=data["email"]
+        ).exists():
             return data
-        if (User.objects.filter(username=data['username']).exists()
-                or User.objects.filter(email=data['email']).exists()):
+        if (
+            User.objects.filter(username=data["username"]).exists()
+            or User.objects.filter(email=data["email"]).exists()
+        ):
             raise serializers.ValidationError(
-                'Пользователь с такими данными уже существует!'
+                "Пользователь с такими данными уже существует!"
             )
         return data
 
@@ -127,6 +135,7 @@ class UserEditSerializer(UserSerializer):
 
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
+
     # ГОТОВО! Лишнее переопределение поля, нужно указать его в мете как только для чтения.
     author = serializers.SlugRelatedField(
         slug_field="username",
@@ -139,7 +148,9 @@ class ReviewSerializer(serializers.ModelSerializer):
             title_id = self.context["view"].kwargs["title_id"]
             author = self.context["request"].user
             # ГОТОВО! Не нужно доставать объект, нужно передавать id в следующей строке.
-            if author.reviews.filter(title=title_id).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него и не доставать используя related_name
+            if author.reviews.filter(
+                title=title_id
+            ).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него и не доставать используя related_name
                 raise serializers.ValidationError(
                     "Запрещено добавлять второй отзыв."
                 )
