@@ -3,6 +3,8 @@ from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import filters, generics, mixins, status, viewsets
+from rest_framework.pagination import LimitOffsetPagination
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from rest_framework.permissions import (
     AllowAny,
@@ -59,9 +61,18 @@ class TitleViewSet(viewsets.ModelViewSet):
         .prefetch_related("genre")
         .annotate(rating=Avg("reviews__score"))  # Супер
     )
+    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    # Нужно добавить бек сортировки, а так же бек фильтрации
+    filterset_fields = (
+        "name",
+        "year",
+        "category",
+        "genre",
+    )
+    # ГОТОВО! 1. Нужно добавить бек сортировки.
+    # ГОТОВО? 2. а так же бек фильтрации
     # (хотя она есть в settings, но это список, у он переопределяется), и ограничить её в теле Viewset
 
     def get_serializer_class(self):
@@ -118,7 +129,8 @@ class SignUpView(generics.GenericAPIView):
             # Есть 2 решения:
             # 1. Создавать пользователя методом get_or_create, нужно в блоке try
             # с выбросом исключения если будет неверное имя пользователя или емаил (нужно найти верное исключение).
-            # 2. Создаем так же как в строках 118-120, но с валидацией в сериализаторе,
+            # 2. Создаем так же как в строках ![serializer = SignUpSerializer...serializer.save]!,
+            # но с валидацией в сериализаторе,
             # в нём нужно проверить, что емаил или ник не используется, а так же придется написать метод create.
             username=request.data.get("username"),
             email=request.data.get("email"),
