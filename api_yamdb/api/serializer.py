@@ -70,20 +70,30 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
 class SignUpSerializer(serializers.ModelSerializer):
     # Для классов Регистрации и Проверки токена не нужно общение с БД, нужно переопределить родительский класс.
-    # Так же смотри замечание в модели про валидацию и про длину полей,
-    # это касается всех сериалайзеров для Пользователя.
+
+    username = serializers.CharField(
+        required=True,
+        max_length=settings.LENGTH_NAME,
+        validators=[username_valid,]
+    )
+    email = serializers.EmailField(
+        required=True,
+        max_length=settings.LENGTH_EMAIL,)
+    
     class Meta:
         model = User
         fields = ("username", "email")
-
-    def validate_username(
-        self, value
-    ):  # Для всех сериалайзеров user нужны валидации на регулярку и me.
-        if value.lower() == "me":
-            raise ValidationError(
-                'Нельзя использовать "me" в качестве username!'
+    
+    def validate(self, data):
+        if User.objects.filter(username=data['username'],
+                               email=data['email']).exists():
+            return data
+        if (User.objects.filter(username=data['username']).exists()
+                or User.objects.filter(email=data['email']).exists()):
+            raise serializers.ValidationError(
+                'Пользователь с такими данными уже существует!'
             )
-        return value
+        return data
 
 
 class CustomTokenSerializer(serializers.ModelSerializer):
@@ -110,20 +120,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class UserEditSerializer(
-    serializers.ModelSerializer
-):  # Наследуем этот сериалайзер от UserSerializer и наследуем мету от его меты
-    # пишем в мете роль только для чтения, весь класс из 3 строк.
-    class Meta:
-        fields = (
-            "bio",
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "role",
-        )
-        model = User
+class UserEditSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
         read_only_fields = ("role",)
 
 
