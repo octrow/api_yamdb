@@ -1,6 +1,6 @@
-from pathlib import Path
+import os
 from datetime import timedelta
-
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -24,6 +24,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "drf_yasg",
     "rest_framework",
+    "django_filters",
     "rest_framework_simplejwt",
     "rest_framework_swagger",
     "users.apps.UsersConfig",
@@ -118,12 +119,32 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication"
     ],
     "DEFAULT_SCHEMA_CLASS": "rest_framework.schemas.coreapi.AutoSchema",
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    # "DEFAULT_FILTER_BACKENDS": [
+    #     "django_filters.rest_framework.DjangoFilterBackend"
+    # ],
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=1),
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
+
+AUTH_USER_MODEL = "users.User"
+
+EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
+EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
+
+DEFAULT_FROM_EMAIL = "kov.dima.seaman@mail.ru"
+EMAIL_SUBJECT = "Подтверждение регистрации"
+
+FORMAT_STRING = "H"
+
+LENGTH_NAME = 150  # username?
+LENGTH_EMAIL = 254
+LENGTH_SLUG = 50
+LENGTH_REALNAME = 256
 
 SWAGGER_SETTINGS = {
     "SECURITY_DEFINITIONS": {
