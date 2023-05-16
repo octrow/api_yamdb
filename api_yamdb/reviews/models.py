@@ -3,47 +3,26 @@ from django.db import models
 
 from reviews.validators import year_validator
 from users.models import User
+from reviews.basemodel import BaseModelCategoryGenre
 
 
-class Category(models.Model):
+class Category(BaseModelCategoryGenre):
     """Модель для категорий произведений"""
 
-    name = models.CharField(
-        "Название категории",
-        max_length=256,
-        help_text="Введите название категории",
-    )
-    slug = models.SlugField(
-        "Путь slug к категории", max_length=50, unique=True
-    )
-
-    class Meta:
-        ordering = ("name",)
+    class Meta(BaseModelCategoryGenre.Meta):
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
-    def __str__(self):
-        return self.name[:30]
 
-
-class Genre(models.Model):
+class Genre(BaseModelCategoryGenre):
     """Модель для жанров произведений"""
 
-    name = models.CharField(
-        "Название жанра", max_length=256, help_text="Введите название жанра"
-    )
-    slug = models.SlugField("Путь slug жанра", max_length=50, unique=True)
-
-    class Meta:
-        ordering = ("name",)
+    class Meta(BaseModelCategoryGenre.Meta):
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
 
-    def __str__(self):
-        return self.name[:30]
 
-
-# Модели Категорий и Жанров, по сути ни чем не отличаются, лучше сделать абстрактную модель и занаследоваться от неё.
+# ГОТОВО! Модели Категорий и Жанров, по сути ни чем не отличаются, лучше сделать абстрактную модель и занаследоваться от неё.
 # Также нужно добавить сортировку по имени.
 # Незабываем унаследовать и мету от меты абстрактного класса.
 # Так же в абстрактном классе размещаем и метод стр.

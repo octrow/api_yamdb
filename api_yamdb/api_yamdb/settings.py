@@ -135,5 +135,7 @@ EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
 
 DEFAULT_FROM_EMAIL = "kov.dima.seaman@mail.ru"
 
-LENGTH_NAME = 150
+LENGTH_NAME = 150  # username?
 LENGTH_EMAIL = 254
+LENGTH_SLUG = 50
+LENGTH_REALNAME = 256

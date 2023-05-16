@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from django.contrib.auth.models import Group
 from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
@@ -15,11 +15,18 @@ class GenreAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
 
+class GenreTitleTabular(admin.TabularInline):
+    model = GenreTitle
+    extra = 1
+
+
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ("name", "year", "description")
+    list_display = ("name", "year", "description", "category")
     search_fields = ["name", "year"]
-    # Нужно вывести список жанров в списке Произведения, но и этого мало.
+    list_filter = ("category", "genre")
+    inlines = [GenreTitleTabular]
+    # ГОТОВО! Нужно вывести список жанров в списке Произведения, но и этого мало.
     # Если зайти в само произведение то ничего не будет, а хочется редактировать
     # жанры произведения, поможет это https://stackoverflow.com/questions/64325709/using-tabularinline-in-django-admin
 
@@ -36,8 +43,5 @@ class CommentAdmin(admin.ModelAdmin):
     search_fields = ["text", "review"]
 
 
-@admin.register(GenreTitle)
-class GenreTitleAdmin(admin.ModelAdmin):
-    list_display = ("title", "genre")
-    # Можно импортировать это - from django.contrib.auth.models import Group и
-    # тут его убрать из регистрации, пропадет не нужное поле группы  в админке.
+# ГОТОВО! Можно импортировать это - from django.contrib.auth.models import Group и
+# тут его убрать из регистрации, пропадет не нужное поле группы  в админке.
