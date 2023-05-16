@@ -66,11 +66,10 @@ class Title(models.Model):
         null=True,
         verbose_name="Категория произведения",
     )
-    year = models.PositiveSmallIntegerField(  # Отлично
+    year = models.SmallIntegerField(  # Отлично
         "Год выпуска",
-        validators=[
-            year_validator
-        ],  # Чтобы ускорить поиск произведений по году, лучше добавить индекс.
+        validators=[year_validator],
+        db_index=True,  # ГОТОВО! Чтобы ускорить поиск произведений по году, лучше добавить индекс.
     )
     description = models.TextField("Описание произведения", blank=True)
 

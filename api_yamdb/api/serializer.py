@@ -3,6 +3,7 @@ from rest_framework import serializers
 from rest_framework.serializers import ValidationError
 
 from reviews.models import Category, Comment, Genre, Review, Title
+from reviews.validators import year_validator
 from users.models import User
 
 
@@ -46,9 +47,12 @@ class TitleAddSerializer(serializers.ModelSerializer):
         queryset=Genre.objects.all(),
         many=True,
     )
+    year = serializers.IntegerField(validators=[year_validator])
     rating = serializers.IntegerField(read_only=True)
-    # 1.Нужна валидация года.
-    # 2. Нужна валидация поля Жанра, у нас по ТЗ это поля обязательное,
+
+    # ГОТОВО! 1.Нужна валидация года.
+
+    # ГОТОВО! 2. Нужна валидация поля Жанра, у нас по ТЗ это поля обязательное,
     # если сейчас передать пустой список через Postman, то Произведение создастся вообще без Жанров.
 
     class Meta:  # ГОТОВО! Класс Meta должен быть выше методов, но ниже полей.
@@ -57,6 +61,11 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):  # Отлично
         return TitleShowSerializer(instance).data
+
+    def validate_genre(self, value):
+        if not value:
+            raise serializers.ValidationError("Требуется выбрать жанр")
+        return value
 
 
 class SignUpSerializer(serializers.ModelSerializer):
