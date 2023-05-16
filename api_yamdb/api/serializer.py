@@ -1,12 +1,14 @@
-from django.shortcuts import get_object_or_404
+# from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-from rest_framework.serializers import ValidationError
 
+from api_yamdb.settings import LENGTH_EMAIL, LENGTH_NAME
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
-from users.validator import username_valid
 from users.models import User
-from api_yamdb.settings import LENGTH_NAME, LENGTH_EMAIL
+from users.validator import username_valid
+
+# from rest_framework.serializers import ValidationError
+
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -55,7 +57,8 @@ class TitleAddSerializer(serializers.ModelSerializer):
     # ГОТОВО! 1.Нужна валидация года.
 
     # ГОТОВО! 2. Нужна валидация поля Жанра, у нас по ТЗ это поля обязательное,
-    # если сейчас передать пустой список через Postman, то Произведение создастся вообще без Жанров.
+    # если сейчас передать пустой список через Postman, то Произведение
+    # создастся вообще без Жанров.
 
     class Meta:  # ГОТОВО! Класс Meta должен быть выше методов, но ниже полей.
         model = Title
@@ -71,7 +74,8 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    # Для классов Регистрации и Проверки токена не нужно общение с БД, нужно переопределить родительский класс.
+    # Для классов Регистрации и Проверки токена не нужно общение с БД,
+    # нужно переопределить родительский класс.
 
     username = serializers.CharField(
         required=True,
@@ -136,7 +140,8 @@ class UserEditSerializer(UserSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
 
-    # ГОТОВО! Лишнее переопределение поля, нужно указать его в мете как только для чтения.
+    # ГОТОВО! Лишнее переопределение поля, нужно указать его в мете
+    # как только для чтения.
     author = serializers.SlugRelatedField(
         slug_field="username",
         read_only=True,
@@ -147,10 +152,12 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == "POST":
             title_id = self.context["view"].kwargs["title_id"]
             author = self.context["request"].user
-            # ГОТОВО! Не нужно доставать объект, нужно передавать id в следующей строке.
+            # ГОТОВО! Не нужно доставать объект, нужно передавать id
+            # в следующей строке.
             if author.reviews.filter(
                 title=title_id
-            ).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него и не доставать используя related_name
+            ).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него
+                # и не доставать используя related_name
                 raise serializers.ValidationError(
                     "Запрещено добавлять второй отзыв."
                 )

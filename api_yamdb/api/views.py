@@ -2,41 +2,26 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, generics, mixins, status, viewsets
-from rest_framework.pagination import LimitOffsetPagination
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import action
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from api.filters import TitleFilter
-from api.permissions import (
-    IsAdminOrReadOnly,
-    IsAuthorOrReadOnly,
-    IsAdmin,
-)
-from api.serializer import (
-    CategorySerializer,
-    CommentSerializer,
-    CustomTokenSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleAddSerializer,
-    TitleShowSerializer,
-    UserEditSerializer,
-    UserSerializer,
-)
+from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
+from api.serializer import (CategorySerializer, CommentSerializer,
+                            CustomTokenSerializer, GenreSerializer,
+                            ReviewSerializer, SignUpSerializer,
+                            TitleAddSerializer, TitleShowSerializer,
+                            UserEditSerializer, UserSerializer)
+from api.viewset import ListCreateDelMixin
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
-from api.viewset import ListCreateDelMixin
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -73,7 +58,8 @@ class TitleViewSet(viewsets.ModelViewSet):
     )
     # ГОТОВО! 1. Нужно добавить бек сортировки.
     # ГОТОВО? 2. а так же бек фильтрации
-    # (хотя она есть в settings, но это список, у он переопределяется), и ограничить её в теле Viewset
+    # (хотя она есть в settings, но это список, у он переопределяется),
+    # и ограничить её в теле Viewset
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -93,7 +79,8 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )  # Отлично
 
     def get_queryset(self):
-        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
+        # возвращать(печатать) результат.
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
@@ -110,7 +97,8 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
 
     def get_queryset(self):
-        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
+        # возвращать(печатать) результат.
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
@@ -125,13 +113,17 @@ class SignUpView(generics.GenericAPIView):
 
     def post(self, request):
         username_exists = User.objects.filter(
-            # Сейчас нет возможности получить новый пин-код, если вдруг потерян первый.
+            # Сейчас нет возможности получить новый пин-код, если вдруг
+            # потерян первый.
             # Есть 2 решения:
-            # 1. Создавать пользователя методом get_or_create, нужно в блоке try
-            # с выбросом исключения если будет неверное имя пользователя или емаил (нужно найти верное исключение).
-            # 2. Создаем так же как в строках ![serializer = SignUpSerializer...serializer.save]!,
+            # 1. Создавать пользователя методом get_or_create, нужно в блоке
+            # try с выбросом исключения если будет неверное имя пользователя
+            # или емаил (нужно найти верное исключение).
+            # 2. Создаем так же как в строках
+            # ![serializer = SignUpSerializer...serializer.save]!,
             # но с валидацией в сериализаторе,
-            # в нём нужно проверить, что емаил или ник не используется, а так же придется написать метод create.
+            # в нём нужно проверить, что емаил или ник не используется, а так
+            # же придется написать метод create.
             username=request.data.get("username"),
             email=request.data.get("email"),
         ).exists()
@@ -145,12 +137,14 @@ class SignUpView(generics.GenericAPIView):
         # Использовать только валидированные данные.
         confirmation_code = default_token_generator.make_token(user)
         user.save()
-        email_subject = "Регистрация на сайте"  # Литералы в 137-138 убрать в файл с константами.
+        email_subject = "Регистрация на сайте"  # Литералы в 137-138 убрать в
+        # файл с константами.
         email_message = f"Ваш код подтверждения: {confirmation_code}"
         send_mail(
             email_subject,
             email_message,
-            from_email=None,  # А тут должен быть емаил админа и он должен храниться в settings.
+            from_email=None,  # А тут должен быть емаил админа и он должен
+            # храниться в settings.
             recipient_list=[user.email],
         )
         return Response(serializer.data, status=status.HTTP_200_OK)

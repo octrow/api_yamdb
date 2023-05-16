@@ -1,8 +1,10 @@
-from rest_framework import filters, generics, mixins, viewsets
+from rest_framework import filters, mixins, viewsets
+
 from api.permissions import IsAdminOrReadOnly
 
 
-class ListCreateDelMixin(  # Отлично, но лучше убрать этот mixin в специальный файл.
+class ListCreateDelMixin(  # Отлично, но лучше убрать этот mixin
+    # в специальный файл.
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     mixins.ListModelMixin,
