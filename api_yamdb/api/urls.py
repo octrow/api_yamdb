@@ -27,12 +27,17 @@ routerv1.register(
 )
 routerv1.register(r"users", UsersViewSet, basename="users")
 
-urlpatterns = [
-    path("v1/", include(routerv1.urls)),
-    path("v1/auth/signup/", SignUpView.as_view(), name="signup"),
+auth_urls = [
     path(
-        "v1/auth/token/",  # Выносим одинаковые префиксы в отдельный список.
-        CustomTokenObtainView.as_view(),
+        'auth/token/', CustomTokenObtainView.as_view(),
         name="token_obtain_pair",
     ),
+    path(
+        'auth/signup/', SignUpView.as_view(), name="signup"),
 ]
+
+urlpatterns = [
+    path("v1/", include(routerv1.urls)),
+    path('v1/', include(auth_urls)),
+]
+
