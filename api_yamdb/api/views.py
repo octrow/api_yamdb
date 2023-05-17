@@ -2,6 +2,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
+
+from rest_framework.decorators import action
+from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, generics, status, viewsets
 from rest_framework.decorators import action
@@ -10,18 +13,26 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.settings import api_settings
+from rest_framework.decorators import action, api_view, permission_classes
 
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from api.filters import TitleFilter
 from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializer import (CategorySerializer, CommentSerializer,
-                            CustomTokenSerializer, GenreSerializer,
+                            GetTokenSerializer, GenreSerializer,
                             ReviewSerializer, SignUpSerializer,
                             TitleAddSerializer, TitleShowSerializer,
                             UserEditSerializer, UserSerializer)
 from api.viewset import ListCreateDelMixin
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
+
+
+EMAIL_SUBJECT = 'Регистрация на сайте'
+CORRECT_CODE_EMAIL_MESSAGE = 'Код подтверждения: {code}.'
+USERNAME_EMAIL_ALREADY_EXISTS = 'Такое username или email уже занято.'
+INVALID_CODE = 'Неверный код подтверждения.'
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -105,74 +116,68 @@ class CommentViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user, review=self.get_review())
 
 
-class SignUpView(generics.GenericAPIView):
-    """Регистрация новых пользователя по email."""
+class APIGetToken(APIView):
+    """
+    Получение JWT-токена в обмен на username и confirmation code.
+    Пример тела запроса:
+    {
+        "username": "string",
+        "confirmation_code": "string"
+    }
+    """
 
+    permission_classes = (AllowAny,)
+
+    def post(self, request):
+        serializer = GetTokenSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        data = serializer.validated_data
+        try:
+            user = User.objects.get(username=data['username'])
+        except User.DoesNotExist:
+            return Response(
+                {'username': 'Пользователь не найден!'},
+                status=status.HTTP_404_NOT_FOUND)
+        if data.get('confirmation_code') == user.confirmation_code:
+            token = RefreshToken.for_user(user).access_token
+            return Response({'token': str(token)},
+                            status=status.HTTP_201_CREATED)
+        return Response(
+            {'confirmation_code': 'Неверный код подтверждения!'},
+            status=status.HTTP_400_BAD_REQUEST)
+
+class APISignup(APIView):
+    """
+    Получить код подтверждения на переданный email.
+    Пример тела запроса:
+    {
+        "email": "string",
+        "username": "string"
+    }.
+    """
+
+    queryset = User.objects.all()
     serializer_class = SignUpSerializer
     permission_classes = (AllowAny,)
 
     def post(self, request):
-        username_exists = User.objects.filter(
-            # Сейчас нет возможности получить новый пин-код, если вдруг
-            # потерян первый.
-            # Есть 2 решения:
-            # 1. Создавать пользователя методом get_or_create, нужно в блоке
-            # try с выбросом исключения если будет неверное имя пользователя
-            # или емаил (нужно найти верное исключение).
-            # 2. Создаем так же как в строках
-            # ![serializer = SignUpSerializer...serializer.save]!,
-            # но с валидацией в сериализаторе,
-            # в нём нужно проверить, что емаил или ник не используется, а так
-            # же придется написать метод create.
-            username=request.data.get("username"),
-            email=request.data.get("email"),
-        ).exists()
-        if username_exists:
-            return Response(request.data, status=status.HTTP_200_OK)
         serializer = SignUpSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)  # Отлично
-        serializer.save(is_active=False)
-        user = User.objects.get(username=serializer.data["username"])
-        # Используем шоткат get_object_or_404.
-        # Использовать только валидированные данные.
+        serializer.is_valid(raise_exception=True)
+        username = serializer.data.get('username')
+        email = serializer.data.get('email')
+        user, created = User.objects.get_or_create(
+            username=username,
+            email=email
+        )
         confirmation_code = default_token_generator.make_token(user)
-        user.save()
-        email_subject = "Регистрация на сайте"  # Литералы в 137-138 убрать в
-        # файл с константами.
-        email_message = f"Ваш код подтверждения: {confirmation_code}"
         send_mail(
-            email_subject,
-            email_message,
-            from_email=None,  # А тут должен быть емаил админа и он должен
-            # храниться в settings.
-            recipient_list=[user.email],
+        subject='Код подтверждения.',
+        message=f'Здравствуйте, {user.username}.'
+                f'\nКод подтверждения для доступа: {confirmation_code}',
+        from_email=DEFAULT_FROM_EMAIL,
+        recipient_list=[user.email],
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class CustomTokenObtainView(TokenObtainPairView):
-    """Выдача токена."""
-
-    permission_classes = (AllowAny,)
-
-    def post(self, request):
-        confirmation_code = request.data.get("confirmation_code")
-        serializer = CustomTokenSerializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user = get_object_or_404(
-            User, username=serializer.data["username"]
-        )  # Использовать только валидированные данные.
-
-        if (
-            user.confirmation_code != confirmation_code
-        ):  # Это не работает, вы не проверяли проект перед отправкой?
-            return Response(status=status.HTTP_400_BAD_REQUEST)
-        user.is_active = True
-        user.save()
-        token = RefreshToken.for_user(user)
-        return Response(
-            {"token": str(token.access_token)}, status=status.HTTP_200_OK
-        )
 
 
 class UsersViewSet(viewsets.ModelViewSet):
@@ -193,13 +198,18 @@ class UsersViewSet(viewsets.ModelViewSet):
         url_path="me",
         permission_classes=(IsAuthenticated,),
     )
+
     def user_me_profile(self, request):
         user = request.user
 
         if request.method == "GET":
             serializer = UserSerializer(user)
 
-        serializer = UserEditSerializer(user, data=request.data, partial=True)
+        serializer = UserEditSerializer(
+            user,
+            data=request.data,
+            partial=True
+        )
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

@@ -1,3 +1,6 @@
+from django.conf import settings
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
 # from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 import secrets
@@ -11,6 +14,7 @@ from api_yamdb.settings import (
 )
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
+from users.validator import username_valid
 from users.models import User
 from users.validator import username_valid
 
@@ -80,6 +84,7 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
+
     # Для классов Регистрации и Проверки токена не нужно общение с БД,
     # нужно переопределить родительский класс.
 
@@ -116,9 +121,13 @@ class SignUpSerializer(serializers.ModelSerializer):
 
 class CustomTokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
     class Meta:
-        fields = ("username",)
+        fields = (
+            'username',
+            'confirmation_code'
+        )
         model = User
 
     def create(self, data):
@@ -126,7 +135,7 @@ class CustomTokenSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta():
         model = User
         fields = (
             "bio",
@@ -185,3 +194,17 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ("id", "text", "author", "pub_date")
+
+
+class GetTokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True)
+    confirmation_code = serializers.CharField(
+        required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )

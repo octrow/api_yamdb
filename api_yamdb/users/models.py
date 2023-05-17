@@ -1,6 +1,9 @@
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from .validator import username_valid
 
@@ -46,7 +49,11 @@ class User(AbstractUser):
         verbose_name='Роль',
     )
     confirmation_code = models.CharField(
-        max_length=150, verbose_name='Код')
+        max_length=150, verbose_name='Код',
+        default='XXXX',
+        help_text=('Введите код подтверждения,'
+                   'который был отправлен на ваш email')
+    )
 
     class Meta:
         ordering = ('username',)
@@ -63,3 +70,12 @@ class User(AbstractUser):
     @property
     def is_admin(self):
         return self.role == self.ADMIN or self.is_superuser
+
+@receiver(post_save, sender=User)
+def post_save(sender, instance, created, **kwargs):
+    if created:
+        confirmation_code = default_token_generator.make_token(
+            instance
+        )
+        instance.confirmation_code = confirmation_code
+        instance.save()
