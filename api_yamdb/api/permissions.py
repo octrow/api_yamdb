@@ -5,9 +5,7 @@ class IsAdmin(permissions.BasePermission):
     """Проверка на администратора или суперюзера."""
 
     def has_permission(self, request, view):
-        return request.user.is_authenticated and (
-            request.user.is_admin
-        )  # Не надо тут проверять еще и супера, он уже прописать в админе в модели.
+        return request.user.is_authenticated and request.user.is_admin
 
 
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -20,8 +18,8 @@ class IsAdminOrReadOnly(permissions.BasePermission):
         return (
             request.method in permissions.SAFE_METHODS
             or request.user.is_authenticated
-            and (request.user.is_admin)
-        )  # Не надо тут проверять еще и супера, он уже прописать в админе в модели.
+            and request.user.is_admin
+        )
 
 
 class IsAuthorOrReadOnly(permissions.BasePermission):

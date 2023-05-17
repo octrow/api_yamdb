@@ -2,15 +2,15 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, generics, mixins, status, viewsets
-from rest_framework.generics import CreateAPIView
+
 from rest_framework.decorators import action
 from rest_framework.views import APIView
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, generics, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.settings import api_settings
@@ -18,28 +18,15 @@ from rest_framework.decorators import action, api_view, permission_classes
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from api.filters import TitleFilter
-from api.permissions import (
-    IsAdminOrReadOnly,
-    IsAuthorOrReadOnly,
-    IsAdmin,
-)
-from api.serializer import (
-    CategorySerializer,
-    CommentSerializer,
-    CustomTokenSerializer,
-    GenreSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleAddSerializer,
-    TitleShowSerializer,
-    UserEditSerializer,
-    UserSerializer,
-    GetTokenSerializer,
-)
+from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
+from api.serializer import (CategorySerializer, CommentSerializer,
+                            GetTokenSerializer, GenreSerializer,
+                            ReviewSerializer, SignUpSerializer,
+                            TitleAddSerializer, TitleShowSerializer,
+                            UserEditSerializer, UserSerializer)
+from api.viewset import ListCreateDelMixin
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
-from api.viewset import ListCreateDelMixin
 
 
 EMAIL_SUBJECT = 'Регистрация на сайте'
@@ -70,10 +57,20 @@ class TitleViewSet(viewsets.ModelViewSet):
         .prefetch_related("genre")
         .annotate(rating=Avg("reviews__score"))  # Супер
     )
+    pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
-    # Нужно добавить бек сортировки, а так же бек фильтрации
-    # (хотя она есть в settings, но это список, у он переопределяется), и ограничить её в теле Viewset
+    filterset_fields = (
+        "name",
+        "year",
+        "category",
+        "genre",
+    )
+    # ГОТОВО! 1. Нужно добавить бек сортировки.
+    # ГОТОВО? 2. а так же бек фильтрации
+    # (хотя она есть в settings, но это список, у он переопределяется),
+    # и ограничить её в теле Viewset
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -93,10 +90,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
         )  # Отлично
 
     def get_queryset(self):
-        title = get_object_or_404(
-            Title, pk=self.kwargs.get("title_id")
-        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
-        return title.reviews.all()
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
+        # возвращать(печатать) результат.
+        return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, title=self.get_title())
@@ -112,10 +108,9 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
 
     def get_queryset(self):
-        review = (
-            self.get_review()
-        )  # Лишняя переменная, потому что одноразовая, можно сразу возвращать(печатать) результат.
-        return review.comments.all()
+        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
+        # возвращать(печатать) результат.
+        return self.get_review().comments.all()
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user, review=self.get_review())
