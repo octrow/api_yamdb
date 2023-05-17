@@ -1,9 +1,11 @@
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.serializers import ValidationError
-
+from rest_framework_simplejwt.tokens import RefreshToken
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
+from users.validator import username_valid
 from users.models import User
 
 
@@ -69,28 +71,42 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.ModelSerializer):
-    # Для классов Регистрации и Проверки токена не нужно общение с БД, нужно переопределить родительский класс.
-    # Так же смотри замечание в модели про валидацию и про длину полей,
-    # это касается всех сериалайзеров для Пользователя.
+
+#  Для классов Регистрации и Проверки токена не нужно общение с БД, нужно переопределить родительский класс.
+    username = serializers.CharField(
+        required=True,
+        max_length=settings.LENGTH_NAME,
+        validators=[username_valid,]
+    )
+    email = serializers.EmailField(
+        required=True,
+        max_length=settings.LENGTH_EMAIL,)
+    
     class Meta:
         model = User
         fields = ("username", "email")
-
-    def validate_username(
-        self, value
-    ):  # Для всех сериалайзеров user нужны валидации на регулярку и me.
-        if value.lower() == "me":
-            raise ValidationError(
-                'Нельзя использовать "me" в качестве username!'
+    
+    def validate(self, data):
+        if User.objects.filter(username=data['username'],
+                               email=data['email']).exists():
+            return data
+        if (User.objects.filter(username=data['username']).exists()
+                or User.objects.filter(email=data['email']).exists()):
+            raise serializers.ValidationError(
+                'Пользователь с такими данными уже существует!'
             )
-        return value
+        return data
 
 
 class CustomTokenSerializer(serializers.ModelSerializer):
     username = serializers.CharField()
+    confirmation_code = serializers.CharField()
 
     class Meta:
-        fields = ("username",)
+        fields = (
+            'username',
+            'confirmation_code'
+        )
         model = User
 
     def create(self, data):
@@ -98,7 +114,7 @@ class CustomTokenSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta:
+    class Meta():
         model = User
         fields = (
             "bio",
@@ -110,20 +126,8 @@ class UserSerializer(serializers.ModelSerializer):
         )
 
 
-class UserEditSerializer(
-    serializers.ModelSerializer
-):  # Наследуем этот сериалайзер от UserSerializer и наследуем мету от его меты
-    # пишем в мете роль только для чтения, весь класс из 3 строк.
-    class Meta:
-        fields = (
-            "bio",
-            "username",
-            "email",
-            "first_name",
-            "last_name",
-            "role",
-        )
-        model = User
+class UserEditSerializer(UserSerializer):
+    class Meta(UserSerializer.Meta):
         read_only_fields = ("role",)
 
 
@@ -171,3 +175,17 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comment
         fields = ("id", "text", "author", "pub_date")
+
+
+class GetTokenSerializer(serializers.ModelSerializer):
+    username = serializers.CharField(
+        required=True)
+    confirmation_code = serializers.CharField(
+        required=True)
+
+    class Meta:
+        model = User
+        fields = (
+            'username',
+            'confirmation_code'
+        )
