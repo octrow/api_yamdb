@@ -8,3 +8,5 @@ pytest-django==4.4.0
 pytest-pythonpath==0.7.3
 django-filter==23.2
 loguru==0.7.0
+drf_yasg==1.21.5
+django-rest-swagger==2.2.0
