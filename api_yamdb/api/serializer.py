@@ -83,10 +83,7 @@ class TitleAddSerializer(serializers.ModelSerializer):
         return value
 
 
-class SignUpSerializer(serializers.ModelSerializer):
-
-    # Для классов Регистрации и Проверки токена не нужно общение с БД,
-    # нужно переопределить родительский класс.
+class SignUpSerializer(serializers.Serializer):
 
     username = serializers.CharField(
         required=True,
@@ -117,21 +114,6 @@ class SignUpSerializer(serializers.ModelSerializer):
                 "Пользователь с такими данными уже существует!"
             )
         return data
-
-
-class CustomTokenSerializer(serializers.ModelSerializer):
-    username = serializers.CharField()
-    confirmation_code = serializers.CharField()
-
-    class Meta:
-        fields = (
-            'username',
-            'confirmation_code'
-        )
-        model = User
-
-    def create(self, data):
-        return User.objects.create_user(data["username"])
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -196,7 +178,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = ("id", "text", "author", "pub_date")
 
 
-class GetTokenSerializer(serializers.ModelSerializer):
+class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True)
     confirmation_code = serializers.CharField(
