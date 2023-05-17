@@ -1,5 +1,6 @@
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
+from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 
@@ -13,7 +14,6 @@ from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework_simplejwt.settings import api_settings
 from rest_framework.decorators import action, api_view, permission_classes
 
 from api_yamdb.settings import DEFAULT_FROM_EMAIL
@@ -29,10 +29,7 @@ from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
 
-EMAIL_SUBJECT = 'Регистрация на сайте'
-CORRECT_CODE_EMAIL_MESSAGE = 'Код подтверждения: {code}.'
-USERNAME_EMAIL_ALREADY_EXISTS = 'Такое username или email уже занято.'
-INVALID_CODE = 'Неверный код подтверждения.'
+SUBJECT = 'Регистрация на сайте'
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -165,13 +162,14 @@ class APISignup(APIView):
         serializer.is_valid(raise_exception=True)
         username = serializer.data.get('username')
         email = serializer.data.get('email')
-        user, created = User.objects.get_or_create(
-            username=username,
-            email=email
-        )
+        try:
+            user, _ = User.objects.get_or_create(username=username, email=email)
+        except IntegrityError:
+            return Response('Ошибка при попытке создать новую запись',
+                            status=status.HTTP_400_BAD_REQUEST)
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
-        subject='Код подтверждения.',
+        SUBJECT,
         message=f'Здравствуйте, {user.username}.'
                 f'\nКод подтверждения для доступа: {confirmation_code}',
         from_email=DEFAULT_FROM_EMAIL,
