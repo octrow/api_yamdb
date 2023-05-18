@@ -41,7 +41,7 @@ class Title(models.Model):
         null=True,
         verbose_name="Категория произведения",
     )
-    year = models.SmallIntegerField(  # Отлично
+    year = models.SmallIntegerField(
         "Год выпуска",
         validators=[year_validator],
         db_index=True,
@@ -73,9 +73,6 @@ class GenreTitle(models.Model):
         related_name="genre",
         verbose_name="Жанр",
     )
-
-    def __str__(self):
-        return f"{self.title} {self.genre}"
 
     class Meta:
         verbose_name = "Жанр"
