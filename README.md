@@ -6,7 +6,7 @@ REST API для сервиса YaMDb — базы отзывов о фильма
 [![Django](https://img.shields.io/badge/-Django-464646?style=flat&logo=Django&logoColor=56C0C0&color=008080)](https://www.djangoproject.com/)
 [![Django REST Framework](https://img.shields.io/badge/-Django%20REST%20Framework-464646?style=flat&logo=Django%20REST%20Framework&logoColor=56C0C0&color=008080)](https://www.django-rest-framework.org/)
 [![Simple JWT](https://img.shields.io/badge/-SimpleJWT-464646?style=flat&color=008080)](https://jwt.io/)
-[![SQLite]((https://img.shields.io/badge/-SQLite-464646?style=flat&color=008080))](https://www.sqlite.org/)
+[![SQLite](https://img.shields.io/badge/-SQLite-464646?style=flat&color=008080)](https://www.sqlite.org/)
 
 ### Запуск проекта ▶
 1. Клонирование репозитория
