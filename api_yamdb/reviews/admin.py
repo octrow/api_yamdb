@@ -27,6 +27,8 @@ class TitleAdmin(admin.ModelAdmin):
     list_filter = ("category", "genre")
     list_editable = ("category", "year", "description")
     inlines = [GenreTitleTabular]
+    # Вторая часть замечания решена, но не первая, повторю:
+    # Нужно вывести список Жанров в списке Произведений.
 
 
 @admin.register(Review)

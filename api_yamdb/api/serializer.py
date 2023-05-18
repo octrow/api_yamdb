@@ -48,7 +48,10 @@ class TitleAddSerializer(serializers.ModelSerializer):
         many=True,
     )
     year = serializers.IntegerField(validators=[year_validator])
-    rating = serializers.IntegerField(read_only=True)
+    rating = serializers.IntegerField(read_only=True)  # МОЖНО ЛУЧШЕ. Вообще
+    # это поле тут лишнее, так как у нас есть метод to_representation и это
+    # поле прописано в листовом сериализаторе, то вывод будет как раз какой
+    # нужен, даже без этого поля.
 
     class Meta:
         model = Title

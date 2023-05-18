@@ -7,25 +7,39 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
 from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializer import (CategorySerializer, CommentSerializer,
-                            GenreSerializer, GetTokenSerializer,
-                            ReviewSerializer, SignUpSerializer,
-                            TitleAddSerializer, TitleShowSerializer,
-                            UserEditSerializer, UserSerializer)
-from api.viewset import ListCreateDelMixin
-from api_yamdb.settings import DEFAULT_FROM_EMAIL
+from api.serializer import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    GetTokenSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleAddSerializer,
+    TitleShowSerializer,
+    UserEditSerializer,
+    UserSerializer,
+)
+from api.mixins import ListCreateDelMixin
+from api_yamdb.settings import DEFAULT_FROM_EMAIL, SUBJECT  # Как достать
+
+# правильно файл настроек клик
+# https://docs.djangoproject.com/en/4.0/topics/settings/#using-settings-in-
+# python-code
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
-SUBJECT = "Регистрация на сайте"
+# ЧАСТИЧНО ГОТОВО! Константу убираем в файл с константами.
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -52,7 +66,9 @@ class TitleViewSet(viewsets.ModelViewSet):
     )
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)
+    filter_backends = (DjangoFilterBackend,)  # Бек для фильтрации вижу, а вот
+    # бека для сортировки нет. Так же не вижу ограничения по каким полям
+    # сортировка разрешена. Ссылка есть в прошлом ревью.
     filterset_class = TitleFilter
     filterset_fields = (
         "name",
@@ -115,14 +131,18 @@ class APIGetToken(APIView):
         serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        try:
+        try:  # Вместо блока try и get нужен get_object_or_404
             user = User.objects.get(username=data["username"])
         except User.DoesNotExist:
             return Response(
                 {"username": "Пользователь не найден!"},
                 status=status.HTTP_404_NOT_FOUND,
             )
-        if data.get("confirmation_code") == user.confirmation_code:
+        if (
+            data.get("confirmation_code") == user.confirmation_code
+        ):  # Это не то,
+            # если мы используем default_token_generator для генерации
+            # пин-кода, то нужно использовать его и для проверки пин-кода.
             token = RefreshToken.for_user(user).access_token
             return Response(
                 {"token": str(token)}, status=status.HTTP_201_CREATED
@@ -158,13 +178,20 @@ class APISignup(APIView):
             )
         except IntegrityError:
             return Response(
-                "Ошибка при попытке создать новую запись",
+                "Ошибка при попытке создать новую запись",  # Лучше выдать
+                # конкретную ошибку для каждого поля, можно сделать так:
+                # - создать 2 текстовые константы для разных ошибок, например:
+                # Электронная почта уже занята!
+                # - записать в тернарник так: переменная = ПЕРВАЯ_КОНСТАНТА
+                # если Юсер.отфильтрован(емаил=емаил).существует()
+                # иначе ВТОРАЯ_КОНСТАНТА
                 status=status.HTTP_400_BAD_REQUEST,
             )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             SUBJECT,
-            message=f"Здравствуйте, {user.username}."
+            message=f"Здравствуйте, {user.username}."  # Текстовые константы
+            # выносим в файл для констант. Наполнять их можно через формат.
             f"\nКод подтверждения для доступа: {confirmation_code}",
             from_email=DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
@@ -195,6 +222,8 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         if request.method == "GET":
             serializer = UserSerializer(user)
+            # А вот условие зря убрали получается если метод patch то
+            # выполниться и 197 строка и 199, зачем нам это?
 
         serializer = UserEditSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)

@@ -4,7 +4,8 @@ from api_yamdb.settings import LENGTH_REALNAME, LENGTH_SLUG
 from users.models import User
 
 
-class BaseModelCategoryGenre(models.Model):
+class BaseModelCategoryGenre(models.Model):  # Абстрактным моделям принято
+    # давать имена по их полям, чтобы было сразу понятно - что в них.
     """Модель для жанров и категорий."""
 
     name = models.CharField("Имя", max_length=LENGTH_REALNAME)
@@ -18,7 +19,7 @@ class BaseModelCategoryGenre(models.Model):
         return self.name[:30]
 
 
-class BaseModelReviewComment(models.Model):
+class BaseModelReviewComment(models.Model):  # См. выше
     """Модель для отзывов и комментариев."""
 
     text = models.TextField(verbose_name="Текст")
