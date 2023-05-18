@@ -1,24 +1,10 @@
-from django.conf import settings
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
-# from django.shortcuts import get_object_or_404
-from rest_framework import serializers
-import secrets
-from django.core.mail import send_mail
-from api_yamdb.settings import (
-    LENGTH_EMAIL,
-    LENGTH_NAME,
-    EMAIL_SUBJECT,
-    FORMAT_STRING,
-    DEFAULT_FROM_EMAIL,
-)
+
+from api_yamdb.settings import LENGTH_EMAIL, LENGTH_NAME
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
-from users.validator import username_valid
 from users.models import User
 from users.validator import username_valid
-
-# from rest_framework.serializers import ValidationError
 
 
 class CategorySerializer(serializers.ModelSerializer):
@@ -64,17 +50,11 @@ class TitleAddSerializer(serializers.ModelSerializer):
     year = serializers.IntegerField(validators=[year_validator])
     rating = serializers.IntegerField(read_only=True)
 
-    # ГОТОВО! 1.Нужна валидация года.
-
-    # ГОТОВО! 2. Нужна валидация поля Жанра, у нас по ТЗ это поля обязательное,
-    # если сейчас передать пустой список через Postman, то Произведение
-    # создастся вообще без Жанров.
-
-    class Meta:  # ГОТОВО! Класс Meta должен быть выше методов, но ниже полей.
+    class Meta:
         model = Title
         fields = "__all__"
 
-    def to_representation(self, instance):  # Отлично
+    def to_representation(self, instance):
         return TitleShowSerializer(instance).data
 
     def validate_genre(self, value):
@@ -84,7 +64,6 @@ class TitleAddSerializer(serializers.ModelSerializer):
 
 
 class SignUpSerializer(serializers.Serializer):
-
     username = serializers.CharField(
         required=True,
         max_length=LENGTH_NAME,
@@ -117,7 +96,7 @@ class SignUpSerializer(serializers.Serializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
-    class Meta():
+    class Meta:
         model = User
         fields = (
             "bio",
@@ -137,8 +116,6 @@ class UserEditSerializer(UserSerializer):
 class ReviewSerializer(serializers.ModelSerializer):
     """Сериализатор отзывов к произведениям"""
 
-    # ГОТОВО! Лишнее переопределение поля, нужно указать его в мете
-    # как только для чтения.
     author = serializers.SlugRelatedField(
         slug_field="username",
         read_only=True,
@@ -149,12 +126,7 @@ class ReviewSerializer(serializers.ModelSerializer):
         if request.method == "POST":
             title_id = self.context["view"].kwargs["title_id"]
             author = self.context["request"].user
-            # ГОТОВО! Не нужно доставать объект, нужно передавать id
-            # в следующей строке.
-            if author.reviews.filter(
-                title=title_id
-            ).exists():  # ГОТОВО (!,?) Автор получен, почему бы из него
-                # и не доставать используя related_name
+            if author.reviews.filter(title=title_id).exists():
                 raise serializers.ValidationError(
                     "Запрещено добавлять второй отзыв."
                 )
@@ -179,14 +151,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
 
 class GetTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(
-        required=True)
-    confirmation_code = serializers.CharField(
-        required=True)
+    username = serializers.CharField(required=True)
+    confirmation_code = serializers.CharField(required=True)
 
     class Meta:
         model = User
-        fields = (
-            'username',
-            'confirmation_code'
-        )
+        fields = ("username", "confirmation_code")

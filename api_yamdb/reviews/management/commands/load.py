@@ -48,7 +48,3 @@ class Command(BaseCommand):
                 logger.error(f"Файл {name}.csv не найден")
             except Exception as e:
                 logger.error(f"Ошибка в процессе загрузки {name}.csv: {e}")
-
-    # ГОТОВО!
-    # Нужны принты о начале и окончании загрузки.
-    # Нужна страховка открытия файла.

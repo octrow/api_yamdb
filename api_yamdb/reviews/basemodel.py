@@ -1,6 +1,7 @@
 from django.db import models
-from users.models import User
+
 from api_yamdb.settings import LENGTH_REALNAME, LENGTH_SLUG
+from users.models import User
 
 
 class BaseModelCategoryGenre(models.Model):

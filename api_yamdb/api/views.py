@@ -3,33 +3,29 @@ from django.core.mail import send_mail
 from django.db import IntegrityError
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
-
-from rest_framework.decorators import action
-from rest_framework.views import APIView
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, generics, status, viewsets
+from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (AllowAny, IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.decorators import action, api_view, permission_classes
 
-from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from api.filters import TitleFilter
 from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
 from api.serializer import (CategorySerializer, CommentSerializer,
-                            GetTokenSerializer, GenreSerializer,
+                            GenreSerializer, GetTokenSerializer,
                             ReviewSerializer, SignUpSerializer,
                             TitleAddSerializer, TitleShowSerializer,
                             UserEditSerializer, UserSerializer)
 from api.viewset import ListCreateDelMixin
+from api_yamdb.settings import DEFAULT_FROM_EMAIL
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
-
-SUBJECT = 'Регистрация на сайте'
+SUBJECT = "Регистрация на сайте"
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -52,7 +48,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     queryset = (
         Title.objects.select_related("category")
         .prefetch_related("genre")
-        .annotate(rating=Avg("reviews__score"))  # Супер
+        .annotate(rating=Avg("reviews__score"))
     )
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
@@ -64,10 +60,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         "category",
         "genre",
     )
-    # ГОТОВО! 1. Нужно добавить бек сортировки.
-    # ГОТОВО? 2. а так же бек фильтрации
-    # (хотя она есть в settings, но это список, у он переопределяется),
-    # и ограничить её в теле Viewset
 
     def get_serializer_class(self):
         if self.action in ("list", "retrieve"):
@@ -82,13 +74,9 @@ class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = ReviewSerializer
 
     def get_title(self):
-        return get_object_or_404(
-            Title, pk=self.kwargs.get("title_id")
-        )  # Отлично
+        return get_object_or_404(Title, pk=self.kwargs.get("title_id"))
 
     def get_queryset(self):
-        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
-        # возвращать(печатать) результат.
         return self.get_title().reviews.all()
 
     def perform_create(self, serializer):
@@ -105,8 +93,6 @@ class CommentViewSet(viewsets.ModelViewSet):
         return get_object_or_404(Review, pk=self.kwargs.get("review_id"))
 
     def get_queryset(self):
-        # ГОТОВО! Лишняя переменная, потому что одноразовая, можно сразу
-        # возвращать(печатать) результат.
         return self.get_review().comments.all()
 
     def perform_create(self, serializer):
@@ -130,18 +116,22 @@ class APIGetToken(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         try:
-            user = User.objects.get(username=data['username'])
+            user = User.objects.get(username=data["username"])
         except User.DoesNotExist:
             return Response(
-                {'username': 'Пользователь не найден!'},
-                status=status.HTTP_404_NOT_FOUND)
-        if data.get('confirmation_code') == user.confirmation_code:
+                {"username": "Пользователь не найден!"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        if data.get("confirmation_code") == user.confirmation_code:
             token = RefreshToken.for_user(user).access_token
-            return Response({'token': str(token)},
-                            status=status.HTTP_201_CREATED)
+            return Response(
+                {"token": str(token)}, status=status.HTTP_201_CREATED
+            )
         return Response(
-            {'confirmation_code': 'Неверный код подтверждения!'},
-            status=status.HTTP_400_BAD_REQUEST)
+            {"confirmation_code": "Неверный код подтверждения!"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
 
 class APISignup(APIView):
     """
@@ -160,20 +150,24 @@ class APISignup(APIView):
     def post(self, request):
         serializer = SignUpSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        username = serializer.data.get('username')
-        email = serializer.data.get('email')
+        username = serializer.data.get("username")
+        email = serializer.data.get("email")
         try:
-            user, _ = User.objects.get_or_create(username=username, email=email)
+            user, _ = User.objects.get_or_create(
+                username=username, email=email
+            )
         except IntegrityError:
-            return Response('Ошибка при попытке создать новую запись',
-                            status=status.HTTP_400_BAD_REQUEST)
+            return Response(
+                "Ошибка при попытке создать новую запись",
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
-        SUBJECT,
-        message=f'Здравствуйте, {user.username}.'
-                f'\nКод подтверждения для доступа: {confirmation_code}',
-        from_email=DEFAULT_FROM_EMAIL,
-        recipient_list=[user.email],
+            SUBJECT,
+            message=f"Здравствуйте, {user.username}."
+            f"\nКод подтверждения для доступа: {confirmation_code}",
+            from_email=DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -196,18 +190,13 @@ class UsersViewSet(viewsets.ModelViewSet):
         url_path="me",
         permission_classes=(IsAuthenticated,),
     )
-
     def user_me_profile(self, request):
         user = request.user
 
         if request.method == "GET":
             serializer = UserSerializer(user)
 
-        serializer = UserEditSerializer(
-            user,
-            data=request.data,
-            partial=True
-        )
+        serializer = UserEditSerializer(user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)

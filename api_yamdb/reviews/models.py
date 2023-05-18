@@ -4,7 +4,6 @@ from django.db import models
 from api_yamdb.settings import LENGTH_REALNAME
 from reviews.basemodel import BaseModelCategoryGenre, BaseModelReviewComment
 from reviews.validators import year_validator
-from users.models import User
 
 
 class Category(BaseModelCategoryGenre):
@@ -21,13 +20,6 @@ class Genre(BaseModelCategoryGenre):
     class Meta(BaseModelCategoryGenre.Meta):
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
-
-
-# ГОТОВО! Модели Категорий и Жанров, по сути ни чем не отличаются, лучше
-# сделать абстрактную модель и занаследоваться от неё.
-# Также нужно добавить сортировку по имени.
-# Незабываем унаследовать и мету от меты абстрактного класса.
-# Так же в абстрактном классе размещаем и метод стр.
 
 
 class Title(models.Model):
@@ -52,8 +44,7 @@ class Title(models.Model):
     year = models.SmallIntegerField(  # Отлично
         "Год выпуска",
         validators=[year_validator],
-        db_index=True,  # ГОТОВО! Чтобы ускорить поиск произведений по году,
-        # лучше добавить индекс.
+        db_index=True,
     )
     description = models.TextField("Описание произведения", blank=True)
 
@@ -61,11 +52,7 @@ class Title(models.Model):
         ordering = (
             "name",
             "year",
-        )  # ГОТОВО! Никакого прока от сортировки по техническому полю "ключ"
-        # нет. Учти, что значения ключей - это случайные величины (точнее они
-        # могут непредсказуемо измениться). Поэтому сортировка по ним - это
-        # опять случайная последовательность объектов. Лучше заменить на
-        # предметное поле (можно на несколько полей - ведь это перечисление)
+        )
         verbose_name = "Произведение"
         verbose_name_plural = "Произведения"
 
@@ -97,25 +84,6 @@ class GenreTitle(models.Model):
     def __str__(self):
         return f"{self.title} {self.genre}"
 
-# +/-ГОТОВО! Оба класса (Ревью и Комменты) имеют одинаковые поля и в мете тоже,
-# значит
-# можно создать базовый абстрактный класс и унаследовать от него обе модели.
-# Но не забудьте что мету тоже нужно наследовать иначе она перезапишет всё,
-# а не только то что 'другое'. Класс наследуется от класса, мета от меты.
-# Еще в моделях ревью и комментов можно в мете добавить умолчательное значение
-# related_name, чтобы не указывать его для каждого поля.
-
-
-# Общее для всех моделей:
-# +/- КАЖЕТСЯ! Смотрим редок внимательно и видим там правильное ограничение
-# длинны для всех полей.
-# + ГОТОВО! Все настройки длины выносим в файл с константами, для многих полей
-# они будут одинаковыми, не повторяемся.
-# + ГОТОВО! Для всех полей нужны verbose_name.
-# + ГОТОВО! Для всех классов нужны в классах Meta verbose_name.
-# +/- КАЖЕТСЯ! У всех классов где используется пагинация, должна быть
-# умолчательная сортировка.
-# + ГОТОВО! Для всех классов нужны методы __str__.
 
 class Review(BaseModelReviewComment):
     """Модель отзывов для произведений."""
@@ -126,11 +94,11 @@ class Review(BaseModelReviewComment):
         verbose_name="Произведение",
     )
     score = models.PositiveSmallIntegerField(
-        "Оценка",  # ГОТОВО! Есть тип данных еще меньше.
+        "Оценка",
         validators=[
             MinValueValidator(1, message="Диапозон для оценки меньше 1"),
             MaxValueValidator(10, message="Диапозон для оценки больше 10"),
-        ],  # ГОТОВО! Отлично, но лучше добавить еще и сообщения об ошибках.
+        ],
     )
 
     class Meta(BaseModelReviewComment.Meta):
