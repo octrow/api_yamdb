@@ -74,7 +74,7 @@ class TitleViewSet(viewsets.ModelViewSet):
     # ГОТОВО! Бек для фильтрации вижу, а вот
     # бека для сортировки нет. Так же не вижу ограничения по каким полям
     # сортировка разрешена. Ссылка есть в прошлом ревью.
-    ## old: Нужно добавить бек сортировки, а так же бек фильтрации (хотя она
+    # old: Нужно добавить бек сортировки, а так же бек фильтрации (хотя она
     # есть в settings, но это список, у он переопределяется), и ограничить её
     # в теле Viewset https://www.django-rest-framework.org/api-guide/filtering/
     # #specifying-which-fields-may-be-ordered-against
@@ -190,22 +190,35 @@ class APISignup(APIView):
                 username=username, email=email
             )
         except IntegrityError:
+            error_message = (
+                constances.EMAIL_TAKEN_ERROR
+                if User.objects.filter(email=email).exists()
+                else constances.USERNAME_TAKEN_ERROR
+            )
             return Response(
-                "Ошибка при попытке создать новую запись",  # Лучше выдать
-                # конкретную ошибку для каждого поля, можно сделать так:
-                # - создать 2 текстовые константы для разных ошибок, например:
-                # Электронная почта уже занята!
-                # - записать в тернарник так: переменная = ПЕРВАЯ_КОНСТАНТА
-                # если Юсер.отфильтрован(емаил=емаил).существует()
-                # иначе ВТОРАЯ_КОНСТАНТА
+                error_message,
                 status=status.HTTP_400_BAD_REQUEST,
             )
+            # return Response(
+            # ГОТОВО!"Ошибка при попытке создать новую запись",  # Лучше выдать
+            #     # конкретную ошибку для каждого поля, можно сделать так:
+            #     # - создать 2 текстовые константы для разных ошибок, например
+            #     # Электронная почта уже занята!
+            #     # - записать в тернарник так: переменная = ПЕРВАЯ_КОНСТАНТА
+            #     # если Юсер.отфильтрован(емаил=емаил).существует()
+            #     # иначе ВТОРАЯ_КОНСТАНТА
+            #     status=status.HTTP_400_BAD_REQUEST,
+            # )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             constances.SUBJECT,
-            message=f"Здравствуйте, {user.username}."  # Текстовые константы
-            # выносим в файл для констант. Наполнять их можно через формат.
-            f"\nКод подтверждения для доступа: {confirmation_code}",
+            message=constances.MESSAGE_EMAIL.format(
+                user.username, confirmation_code
+            ),
+            # ВОЗМОЖНО ГОТОВО?!
+            # message=f"Здравствуйте, {user.username}."  # Текстовые константы
+            # # выносим в файл для констант. Наполнять их можно через формат.
+            # f"\nКод подтверждения для доступа: {confirmation_code}",
             from_email=constances.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
