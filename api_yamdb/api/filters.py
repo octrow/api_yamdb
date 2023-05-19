@@ -1,7 +1,7 @@
-from django_filters import CharFilter, FilterSet, ChoiceFilter
+from django_filters import CharFilter, ChoiceFilter, FilterSet
 
-from reviews.models import Title
 from api_yamdb import constances
+from reviews.models import Title
 
 
 class TitleFilter(FilterSet):

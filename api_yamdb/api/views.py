@@ -7,11 +7,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -19,20 +16,12 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.filters import TitleFilter
 from api.mixins import ListCreateDelMixin
 from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializer import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    GetTokenSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleAddSerializer,
-    TitleShowSerializer,
-    UserEditSerializer,
-    UserSerializer,
-)
+from api.serializer import (CategorySerializer, CommentSerializer,
+                            GenreSerializer, GetTokenSerializer,
+                            ReviewSerializer, SignUpSerializer,
+                            TitleAddSerializer, TitleShowSerializer,
+                            UserEditSerializer, UserSerializer)
 from api_yamdb import constances
-
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 

@@ -1,6 +1,5 @@
 import datetime
 
-
 DEFAULT_FROM_EMAIL = "kov.dima.seaman@mail.ru"
 SUBJECT = "Регистрация на сайте"
 EMAIL_TAKEN_ERROR = "Электронная почта уже занята!"
