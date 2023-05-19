@@ -7,8 +7,11 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (AllowAny, IsAuthenticated,
-                                        IsAuthenticatedOrReadOnly)
+from rest_framework.permissions import (
+    AllowAny,
+    IsAuthenticated,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -16,19 +19,27 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from api.filters import TitleFilter
 from api.mixins import ListCreateDelMixin
 from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializer import (CategorySerializer, CommentSerializer,
-                            GenreSerializer, GetTokenSerializer,
-                            ReviewSerializer, SignUpSerializer,
-                            TitleAddSerializer, TitleShowSerializer,
-                            UserEditSerializer, UserSerializer)
+from api.serializer import (
+    CategorySerializer,
+    CommentSerializer,
+    GenreSerializer,
+    GetTokenSerializer,
+    ReviewSerializer,
+    SignUpSerializer,
+    TitleAddSerializer,
+    TitleShowSerializer,
+    UserEditSerializer,
+    UserSerializer,
+)
 from api_yamdb import constances  # ГОТОВО! Как достать
+
 # правильно файл настроек клик
 # https://docs.djangoproject.com/en/4.0/topics/settings/#using-settings-in-
 # python-code
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
 
-# ЧАСТИЧНО ГОТОВО! Константу убираем в файл с константами.
+# ГОТОВО! Константу убираем в файл с константами.
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -120,13 +131,14 @@ class APIGetToken(APIView):
         serializer = GetTokenSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
-        try:  # Вместо блока try и get нужен get_object_or_404
-            user = User.objects.get(username=data["username"])
-        except User.DoesNotExist:
-            return Response(
-                {"username": "Пользователь не найден!"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+        user = get_object_or_404(User, username=data["username"])
+        # try:  # ГОТОВО! Вместо блока try и get нужен get_object_or_404
+        #     user = User.objects.get(username=data["username"])
+        # except User.DoesNotExist:
+        #     return Response(
+        #         {"username": "Пользователь не найден!"},
+        #         status=status.HTTP_404_NOT_FOUND,
+        #     )
         if (
             data.get("confirmation_code") == user.confirmation_code
         ):  # Это не то,
