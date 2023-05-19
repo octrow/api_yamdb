@@ -248,7 +248,8 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         if request.method == "GET":
             serializer = UserSerializer(user)
-            # А вот условие зря убрали получается если метод patch то
+            return Response(serializer.data, status=status.HTTP_200_OK)
+            # ВОЗМОЖНО ГОТОВО? А вот условие зря убрали получается если метод patch то
             # выполниться и 197 строка и 199, зачем нам это?
 
         serializer = UserEditSerializer(user, data=request.data, partial=True)
