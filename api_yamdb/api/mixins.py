@@ -1,6 +1,5 @@
 from rest_framework import filters, mixins, viewsets
 
-# ГОТОВО! Имя файла лучше поменять на mixins.py.
 from api.permissions import IsAdminOrReadOnly
 
 

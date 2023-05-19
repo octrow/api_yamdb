@@ -119,11 +119,3 @@ AUTH_USER_MODEL = "users.User"
 EMAIL_BACKEND = "django.core.mail.backends.filebased.EmailBackend"
 
 EMAIL_FILE_PATH = os.path.join(BASE_DIR, "sent_emails")
-
-# DEFAULT_FROM_EMAIL = "kov.dima.seaman@mail.ru"
-# SUBJECT = "Регистрация на сайте"
-
-# LENGTH_NAME = 150
-# LENGTH_EMAIL = 254
-# LENGTH_SLUG = 50
-# LENGTH_REALNAME = 256

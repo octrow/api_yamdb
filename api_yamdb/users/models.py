@@ -42,20 +42,13 @@ class User(AbstractUser):
         max_length=constances.LENGTH_NAME, blank=True, verbose_name="Фамилия"
     )
     role = models.CharField(
-        max_length=max(
-            [len(role) for role, _ in ROLE_CHOICES]
-        ),  # ГОТОВО?! Почти верно,
-        # теперь нужно избавиться от индексов, распаковывая 2 переменные,
-        # только второй имя давать не обязательно, используем _.
+        max_length=max([len(role) for role, _ in ROLE_CHOICES]),
         choices=ROLE_CHOICES,
         default=USER,
         verbose_name="Роль",
     )
     confirmation_code = models.CharField(
-        max_length=constances.LENGTH_NAME,  # ГОТОВО! Вынести в файл с
-        # константами, именно с константами, а не в settings, не нужно
-        # захламлять настройки проекта, нужно создать файл для констант и все
-        # константы убрать туда.
+        max_length=constances.LENGTH_NAME,
         verbose_name="Код",
         default="XXXX",
         help_text=(

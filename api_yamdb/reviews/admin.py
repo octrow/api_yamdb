@@ -32,14 +32,6 @@ class TitleAdmin(admin.ModelAdmin):
     list_editable = ("category", "year")
     inlines = [GenreTitleTabular]
 
-    # ГОТОВО! Вторая часть замечания решена, но не первая, повторю:
-    # Нужно вывести список Жанров в списке Произведений.
-    # old: Нужно вывести список жанров в списке Произведения, но и этого мало.
-    # Если зайти в само произведение то ничего не будет, а хочется
-    # редактировать жанры произведения, поможет это
-    # https://stackoverflow.com/questions/
-    # 64325709/using-tabularinline-in-django-admin
-
 
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):

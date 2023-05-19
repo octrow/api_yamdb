@@ -33,14 +33,8 @@ from api.serializer import (
 )
 from api_yamdb import constances
 
-# ГОТОВО! Как достать
-# правильно файл настроек клик
-# https://docs.djangoproject.com/en/4.0/topics/settings/#using-settings-in-
-# python-code
 from reviews.models import Category, Genre, Review, Title
 from users.models import User
-
-# ГОТОВО! Константу убираем в файл с константами.
 
 
 class CategoryViewSet(ListCreateDelMixin):
@@ -71,13 +65,6 @@ class TitleViewSet(viewsets.ModelViewSet):
         DjangoFilterBackend,
         filters.OrderingFilter,
     )
-    # ГОТОВО! Бек для фильтрации вижу, а вот
-    # бека для сортировки нет. Так же не вижу ограничения по каким полям
-    # сортировка разрешена. Ссылка есть в прошлом ревью.
-    # old: Нужно добавить бек сортировки, а так же бек фильтрации (хотя она
-    # есть в settings, но это список, у он переопределяется), и ограничить её
-    # в теле Viewset https://www.django-rest-framework.org/api-guide/filtering/
-    # #specifying-which-fields-may-be-ordered-against
     ordering_fields = ("rating", "name", "year")
     filterset_class = TitleFilter
     filterset_fields = (
@@ -142,20 +129,9 @@ class APIGetToken(APIView):
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
         user = get_object_or_404(User, username=data["username"])
-        # try:  # ГОТОВО! Вместо блока try и get нужен get_object_or_404
-        #     user = User.objects.get(username=data["username"])
-        # except User.DoesNotExist:
-        #     return Response(
-        #         {"username": "Пользователь не найден!"},
-        #         status=status.HTTP_404_NOT_FOUND,
-        #     )
         if default_token_generator.check_token(
             user, data.get("confirmation_code")
         ):
-            # (data.get("confirmation_code") == user.confirmation_code):
-            # ГОТОВО! Это не то,
-            # если мы используем default_token_generator для генерации
-            # пин-кода, то нужно использовать его и для проверки пин-кода.
             token = RefreshToken.for_user(user).access_token
             return Response(
                 {"token": str(token)}, status=status.HTTP_201_CREATED
@@ -199,26 +175,12 @@ class APISignup(APIView):
                 error_message,
                 status=status.HTTP_400_BAD_REQUEST,
             )
-            # return Response(
-            # ГОТОВО!"Ошибка при попытке создать новую запись",  # Лучше выдать
-            #     # конкретную ошибку для каждого поля, можно сделать так:
-            #     # - создать 2 текстовые константы для разных ошибок, например
-            #     # Электронная почта уже занята!
-            #     # - записать в тернарник так: переменная = ПЕРВАЯ_КОНСТАНТА
-            #     # если Юсер.отфильтрован(емаил=емаил).существует()
-            #     # иначе ВТОРАЯ_КОНСТАНТА
-            #     status=status.HTTP_400_BAD_REQUEST,
-            # )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
             constances.SUBJECT,
             message=constances.MESSAGE_EMAIL.format(
                 user.username, confirmation_code
             ),
-            # ВОЗМОЖНО ГОТОВО?!
-            # message=f"Здравствуйте, {user.username}."  # Текстовые константы
-            # # выносим в файл для констант. Наполнять их можно через формат.
-            # f"\nКод подтверждения для доступа: {confirmation_code}",
             from_email=constances.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
@@ -248,10 +210,6 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         if request.method == "GET":
             serializer = UserSerializer(user)
-            # ВОЗМОЖНО ГОТОВО? А вот условие зря убрали получается если метод
-            # patch то
-            # выполниться и 197 строка и 199, зачем нам это?
-
         if request.method == "PATCH":
             serializer = UserEditSerializer(
                 user, data=request.data, partial=True

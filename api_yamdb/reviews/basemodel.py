@@ -4,8 +4,7 @@ from api_yamdb import constances
 from users.models import User
 
 
-class GenreCategoryBase(models.Model):  # ГОТОВО! Абстрактным моделям принято
-    # давать имена по их полям, чтобы было сразу понятно - что в них.
+class GenreCategoryBase(models.Model):
     """Модель для жанров и категорий."""
 
     name = models.CharField("Имя", max_length=constances.LENGTH_REALNAME)
@@ -21,7 +20,7 @@ class GenreCategoryBase(models.Model):  # ГОТОВО! Абстрактным �
         return self.name[:30]
 
 
-class ReviewCommentBase(models.Model):  # ГОТОВО! См. выше
+class ReviewCommentBase(models.Model):
     """Модель для отзывов и комментариев."""
 
     text = models.TextField(verbose_name="Текст")
