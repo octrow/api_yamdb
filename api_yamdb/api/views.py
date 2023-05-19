@@ -248,14 +248,13 @@ class UsersViewSet(viewsets.ModelViewSet):
 
         if request.method == "GET":
             serializer = UserSerializer(user)
-            # ВОЗМОЖНО ГОТОВО? А вот условие зря убрали получается если метод patch то
+            # ВОЗМОЖНО ГОТОВО? А вот условие зря убрали получается если метод
+            # patch то
             # выполниться и 197 строка и 199, зачем нам это?
 
         if request.method == "PATCH":
             serializer = UserEditSerializer(
-                user,
-                data=request.data,
-                partial=True
+                user, data=request.data, partial=True
             )
             serializer.is_valid(raise_exception=True)
             serializer.save()
