@@ -4,7 +4,7 @@ from api_yamdb import constances
 from users.models import User
 
 
-class BaseModelCategoryGenre(models.Model):  # Абстрактным моделям принято
+class GenreCategoryBase(models.Model):  # ГОТОВО! Абстрактным моделям принято
     # давать имена по их полям, чтобы было сразу понятно - что в них.
     """Модель для жанров и категорий."""
 
@@ -21,7 +21,7 @@ class BaseModelCategoryGenre(models.Model):  # Абстрактным модел
         return self.name[:30]
 
 
-class BaseModelReviewComment(models.Model):  # См. выше
+class ReviewCommentBase(models.Model):  # ГОТОВО! См. выше
     """Модель для отзывов и комментариев."""
 
     text = models.TextField(verbose_name="Текст")
