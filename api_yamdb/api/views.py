@@ -139,9 +139,11 @@ class APIGetToken(APIView):
         #         {"username": "Пользователь не найден!"},
         #         status=status.HTTP_404_NOT_FOUND,
         #     )
-        if (
-            data.get("confirmation_code") == user.confirmation_code
-        ):  # Это не то,
+        if default_token_generator.check_token(
+            user, data.get("confirmation_code")
+        ):
+            # (data.get("confirmation_code") == user.confirmation_code):
+            # ГОТОВО! Это не то,
             # если мы используем default_token_generator для генерации
             # пин-кода, то нужно использовать его и для проверки пин-кода.
             token = RefreshToken.for_user(user).access_token
