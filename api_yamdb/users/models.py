@@ -1,9 +1,10 @@
-from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.tokens import default_token_generator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
+from api_yamdb import constances
 
 from .validator import username_valid
 
@@ -22,7 +23,7 @@ class User(AbstractUser):
     )
     bio = models.TextField(verbose_name="Биография", blank=True)
     username = models.CharField(
-        max_length=settings.LENGTH_NAME,
+        max_length=constances.LENGTH_NAME,
         unique=True,
         validators=[username_valid],
         verbose_name="Логин",
@@ -30,15 +31,15 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         unique=True,
-        max_length=settings.LENGTH_EMAIL,
+        max_length=constances.LENGTH_EMAIL,
         verbose_name="email_адрес",
         help_text="Введите адрес электронной почты для регистрации.",
     )
     first_name = models.CharField(
-        max_length=settings.LENGTH_NAME, blank=True, verbose_name="Имя"
+        max_length=constances.LENGTH_NAME, blank=True, verbose_name="Имя"
     )
     last_name = models.CharField(
-        max_length=settings.LENGTH_NAME, blank=True, verbose_name="Фамилия"
+        max_length=constances.LENGTH_NAME, blank=True, verbose_name="Фамилия"
     )
     role = models.CharField(
         max_length=max(

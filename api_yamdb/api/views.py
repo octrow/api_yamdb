@@ -7,32 +7,21 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import (
-    AllowAny,
-    IsAuthenticated,
-    IsAuthenticatedOrReadOnly,
-)
+from rest_framework.permissions import (AllowAny, IsAuthenticated,
+                                        IsAuthenticatedOrReadOnly)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from api.filters import TitleFilter
-from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
-from api.serializer import (
-    CategorySerializer,
-    CommentSerializer,
-    GenreSerializer,
-    GetTokenSerializer,
-    ReviewSerializer,
-    SignUpSerializer,
-    TitleAddSerializer,
-    TitleShowSerializer,
-    UserEditSerializer,
-    UserSerializer,
-)
 from api.mixins import ListCreateDelMixin
-from api_yamdb.settings import DEFAULT_FROM_EMAIL, SUBJECT  # Как достать
-
+from api.permissions import IsAdmin, IsAdminOrReadOnly, IsAuthorOrReadOnly
+from api.serializer import (CategorySerializer, CommentSerializer,
+                            GenreSerializer, GetTokenSerializer,
+                            ReviewSerializer, SignUpSerializer,
+                            TitleAddSerializer, TitleShowSerializer,
+                            UserEditSerializer, UserSerializer)
+from api_yamdb import constances  # ГОТОВО! Как достать
 # правильно файл настроек клик
 # https://docs.djangoproject.com/en/4.0/topics/settings/#using-settings-in-
 # python-code
@@ -189,11 +178,11 @@ class APISignup(APIView):
             )
         confirmation_code = default_token_generator.make_token(user)
         send_mail(
-            SUBJECT,
+            constances.SUBJECT,
             message=f"Здравствуйте, {user.username}."  # Текстовые константы
             # выносим в файл для констант. Наполнять их можно через формат.
             f"\nКод подтверждения для доступа: {confirmation_code}",
-            from_email=DEFAULT_FROM_EMAIL,
+            from_email=constances.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
         )
         return Response(serializer.data, status=status.HTTP_200_OK)

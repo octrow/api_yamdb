@@ -1,6 +1,6 @@
 from django.db import models
 
-from api_yamdb.settings import LENGTH_REALNAME, LENGTH_SLUG
+from api_yamdb import constances
 from users.models import User
 
 
@@ -8,8 +8,10 @@ class BaseModelCategoryGenre(models.Model):  # Абстрактным модел
     # давать имена по их полям, чтобы было сразу понятно - что в них.
     """Модель для жанров и категорий."""
 
-    name = models.CharField("Имя", max_length=LENGTH_REALNAME)
-    slug = models.SlugField("Slug", max_length=LENGTH_SLUG, unique=True)
+    name = models.CharField("Имя", max_length=constances.LENGTH_REALNAME)
+    slug = models.SlugField(
+        "Slug", max_length=constances.LENGTH_SLUG, unique=True
+    )
 
     class Meta:
         abstract = True

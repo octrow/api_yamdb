@@ -1,7 +1,7 @@
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from api_yamdb.settings import LENGTH_REALNAME
+from api_yamdb import constances
 from reviews.basemodel import BaseModelCategoryGenre, BaseModelReviewComment
 from reviews.validators import year_validator
 
@@ -26,7 +26,7 @@ class Title(models.Model):
     """Модель для произведений"""
 
     name = models.CharField(
-        "Название произведения", max_length=LENGTH_REALNAME
+        "Название произведения", max_length=constances.LENGTH_REALNAME
     )
     genre = models.ManyToManyField(
         Genre,

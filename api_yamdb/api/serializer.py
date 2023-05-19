@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from api_yamdb.settings import LENGTH_EMAIL, LENGTH_NAME
+from api_yamdb import constances
 from reviews.models import Category, Comment, Genre, Review, Title
 from reviews.validators import year_validator
 from users.models import User
@@ -69,14 +69,14 @@ class TitleAddSerializer(serializers.ModelSerializer):
 class SignUpSerializer(serializers.Serializer):
     username = serializers.CharField(
         required=True,
-        max_length=LENGTH_NAME,
+        max_length=constances.LENGTH_NAME,
         validators=[
             username_valid,
         ],
     )
     email = serializers.EmailField(
         required=True,
-        max_length=LENGTH_EMAIL,
+        max_length=constances.LENGTH_EMAIL,
     )
 
     class Meta:
