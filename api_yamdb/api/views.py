@@ -31,8 +31,9 @@ from api.serializer import (
     UserEditSerializer,
     UserSerializer,
 )
-from api_yamdb import constances  # ГОТОВО! Как достать
+from api_yamdb import constances
 
+# ГОТОВО! Как достать
 # правильно файл настроек клик
 # https://docs.djangoproject.com/en/4.0/topics/settings/#using-settings-in-
 # python-code
@@ -66,9 +67,18 @@ class TitleViewSet(viewsets.ModelViewSet):
     )
     pagination_class = LimitOffsetPagination
     permission_classes = (IsAdminOrReadOnly,)
-    filter_backends = (DjangoFilterBackend,)  # Бек для фильтрации вижу, а вот
+    filter_backends = (
+        DjangoFilterBackend,
+        filters.OrderingFilter,
+    )
+    # ГОТОВО! Бек для фильтрации вижу, а вот
     # бека для сортировки нет. Так же не вижу ограничения по каким полям
     # сортировка разрешена. Ссылка есть в прошлом ревью.
+    ## old: Нужно добавить бек сортировки, а так же бек фильтрации (хотя она
+    # есть в settings, но это список, у он переопределяется), и ограничить её
+    # в теле Viewset https://www.django-rest-framework.org/api-guide/filtering/
+    # #specifying-which-fields-may-be-ordered-against
+    ordering_fields = ("rating", "name", "year")
     filterset_class = TitleFilter
     filterset_fields = (
         "name",
