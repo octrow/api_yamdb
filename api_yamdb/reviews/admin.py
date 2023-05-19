@@ -22,13 +22,22 @@ class GenreTitleTabular(admin.TabularInline):
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    list_display = ("name", "year", "description", "category")
+    def get_genres(self, obj):
+        return ", ".join([genre.name for genre in obj.genre.all()])
+
+    get_genres.short_description = "Жанры"
+    list_display = ("name", "year", "description", "category", "get_genres")
     search_fields = ["name", "year"]
     list_filter = ("category", "genre")
-    list_editable = ("category", "year", "description")
+    list_editable = ("category", "year")
     inlines = [GenreTitleTabular]
-    # Вторая часть замечания решена, но не первая, повторю:
+
+    # ГОТОВО! Вторая часть замечания решена, но не первая, повторю:
     # Нужно вывести список Жанров в списке Произведений.
+    ## old: Нужно вывести список жанров в списке Произведения, но и этого мало.
+    # Если зайти в само произведение то ничего не будет, а хочется редактировать
+    #  жанры произведения, поможет это https://stackoverflow.com/questions/
+    # 64325709/using-tabularinline-in-django-admin
 
 
 @admin.register(Review)
