@@ -2,22 +2,22 @@ from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from api_yamdb import constances
-from reviews.basemodel import GenreCategoryBase, ReviewCommentBase
+from reviews.basemodel import NameSlugModel, TextAuthorPubdateModel
 from reviews.validators import year_validator
 
 
-class Category(GenreCategoryBase):
+class Category(NameSlugModel):
     """Модель для категорий произведений"""
 
-    class Meta(GenreCategoryBase.Meta):
+    class Meta(NameSlugModel.Meta):
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
 
 
-class Genre(GenreCategoryBase):
+class Genre(NameSlugModel):
     """Модель для жанров произведений"""
 
-    class Meta(GenreCategoryBase.Meta):
+    class Meta(NameSlugModel.Meta):
         verbose_name = "Жанр"
         verbose_name_plural = "Жанры"
 
@@ -82,7 +82,7 @@ class GenreTitle(models.Model):
         return f"{self.title} {self.genre}"
 
 
-class Review(ReviewCommentBase):
+class Review(TextAuthorPubdateModel):
     """Модель отзывов для произведений."""
 
     title = models.ForeignKey(
@@ -98,7 +98,7 @@ class Review(ReviewCommentBase):
         ],
     )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(TextAuthorPubdateModel.Meta):
         verbose_name = "Отзыв"
         verbose_name_plural = "Отзывы"
         default_related_name = "reviews"
@@ -109,7 +109,7 @@ class Review(ReviewCommentBase):
         )
 
 
-class Comment(ReviewCommentBase):
+class Comment(TextAuthorPubdateModel):
     """Модель комментариев для отзывов."""
 
     review = models.ForeignKey(
@@ -118,7 +118,7 @@ class Comment(ReviewCommentBase):
         verbose_name="Отзыв",
     )
 
-    class Meta(ReviewCommentBase.Meta):
+    class Meta(TextAuthorPubdateModel.Meta):
         verbose_name = "Комментарий"
         verbose_name_plural = "Комментарии"
         default_related_name = "comments"

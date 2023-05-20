@@ -4,6 +4,10 @@ from django.contrib.auth.models import Group
 from reviews.models import Category, Comment, Genre, GenreTitle, Review, Title
 
 
+def get_genres(self, obj):
+    return ", ".join([genre.name for genre in obj.genre.all()])
+
+
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     list_display = ("name",)
@@ -22,9 +26,6 @@ class GenreTitleTabular(admin.TabularInline):
 
 @admin.register(Title)
 class TitleAdmin(admin.ModelAdmin):
-    def get_genres(self, obj):
-        return ", ".join([genre.name for genre in obj.genre.all()])
-
     get_genres.short_description = "Жанры"
     list_display = ("name", "year", "description", "category", "get_genres")
     search_fields = ["name", "year"]

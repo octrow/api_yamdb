@@ -4,7 +4,7 @@ from api_yamdb import constances
 from users.models import User
 
 
-class GenreCategoryBase(models.Model):
+class NameSlugModel(models.Model):
     """Модель для жанров и категорий."""
 
     name = models.CharField("Имя", max_length=constances.LENGTH_REALNAME)
@@ -20,7 +20,7 @@ class GenreCategoryBase(models.Model):
         return self.name[:30]
 
 
-class ReviewCommentBase(models.Model):
+class TextAuthorPubdateModel(models.Model):
     """Модель для отзывов и комментариев."""
 
     text = models.TextField(verbose_name="Текст")
